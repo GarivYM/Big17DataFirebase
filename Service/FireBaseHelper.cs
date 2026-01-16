@@ -8,10 +8,12 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Big17DataFirebase2.BusinessLogic;
 using Big17DataFirebase2.Model;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Firestore;
+using Firebase.Firestore.Auth;
 using Java.Lang;
 using Java.Util;
 using Newtonsoft.Json.Linq;
@@ -21,16 +23,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Xamarin.Grpc.NameResolver;
 
 namespace Big17DataFirebase2.Service
 {
 	public class FireBaseHelper
 	{
-		protected static FireBaseHelper me;
+		public static FirestoreEventListener FirestoreEventListener;
+        protected static FireBaseHelper me;
 		private FirebaseApp app;
-
-		readonly static string TAG = "KOSTYAPP";
-		public static TaskCompletionListeners taskCompletionListeners;
 		
 		static FireBaseHelper() { me = new FireBaseHelper(); }
 
@@ -73,7 +74,7 @@ namespace Big17DataFirebase2.Service
 						}
 						else
 						{
-							Log.Error(TAG, "project_info is null");
+							Log.Error(ProManager.TAG, "project_info is null");
 							return; //Exit, as we cannot continue without project_info
 						}
 
@@ -99,11 +100,11 @@ namespace Big17DataFirebase2.Service
 			}
 			catch (FileNotFoundException ex)
 			{
-				Android.Util.Log.Error(TAG, $"File not found: {ex.Message}");
+				Android.Util.Log.Error(ProManager.TAG, $"File not found: {ex.Message}");
 			}
 			catch (System.Exception ex)
 			{
-				Android.Util.Log.Error(TAG, $"Error parsing JSON: {ex.Message}");
+				Android.Util.Log.Error(ProManager.TAG, $"Error parsing JSON: {ex.Message}");
 			}
 		}
 
@@ -115,49 +116,50 @@ namespace Big17DataFirebase2.Service
 				FirebaseAuth mAuth = FirebaseAuth.Instance;
 				//using Android.Gms.Extensions;
 				await mAuth.SignInWithEmailAndPassword(uemail, upass);
-				Log.Debug(TAG, $"MyApp: User Auth {uemail} SignIn success");
+				Log.Debug(ProManager.TAG, $"MyApp: User Auth {uemail} SignIn success");
 				return mAuth.CurrentUser.Uid; // Indicate success
 			}
 			catch (FirebaseAuthException ex)
 			{
-				Log.Error(TAG, $"SignInUserAsync: User Auth SignIn failed: {ex.Message}");
+				Log.Error(ProManager.TAG, $"SignInUserAsync: User Auth SignIn failed: {ex.Message}");
 				return null; // Indicate failure
 			}
 			catch (System.Exception ex)
 			{
-				Log.Error(TAG, $"SignInUserAsync: User Auth SignIn failed, general error: {ex.Message}");
+				Log.Error(ProManager.TAG, $"SignInUserAsync: User Auth SignIn failed, general error: {ex.Message}");
 				return null; // Indicate failure
 			}
 		}
-		public static async Task<string> RegisterUserForAuth(User user)
+		public static async Task<string> RegisterUserForAuth(Model.User user)
 		{
             try
             {
                 FirebaseAuth mAuth = FirebaseAuth.Instance;
-				//using Android.Gms.Extensions;
-				await mAuth.CreateUserWithEmailAndPassword(user.UserEmail, user.UserPass);
-                Log.Debug(TAG, $"RegisterUserForAuth: User Auth {user.UserEmail} SignIn success");
-                return mAuth.CurrentUser.Uid; // Indicate success
+                //using Android.Gms.Extensions;
+                await mAuth.CreateUserWithEmailAndPasswordAsync(user.UserEmail, user.UserPass);
+                Log.Debug(ProManager.TAG, $"RegisterUserForAuth: User Auth {user.UserEmail} SignIn success");
+             
+				return mAuth?.CurrentUser.Uid;
             }
             catch (FirebaseAuthException ex)
             {
-                Log.Error(TAG, $"SignInUserAsync: User Auth SignIn failed: {ex.Message}");
+                Log.Error(ProManager.TAG, $"SignInUserAsync: User Auth SignIn failed: {ex.Message}");
                 return null; // Indicate failure
             }
             catch (System.Exception ex)
             {
-                Log.Error(TAG, $"SignInUserAsync: User Auth SignIn failed, general error: {ex.Message}");
+                Log.Error(ProManager.TAG, $"SignInUserAsync: User Auth SignIn failed, general error: {ex.Message}");
                 return null; // Indicate failure
             }           
         }
-        public static async Task<bool> InsertAsync(User user)
+        public static async Task<bool> InsertAsync(Model.User user)
         {
             try
             {
                 //Insert user to FireStore database
                 HashMap userMap = new HashMap(); //using Java.Util;
                 userMap.Put("FirstName", user.FirstName);
-                //userMap.Put("IsAdmin", user.IsAdmin);
+                userMap.Put("IsAdmin", user.IsAdmin);
                 userMap.Put("LastName", user.LastName);
                 userMap.Put("UserEmail", user.UserEmail);
                 userMap.Put("UserMobile", user.UserMobile);
@@ -168,46 +170,116 @@ namespace Big17DataFirebase2.Service
                                                                         .Collection("users")
                                                                         .Document(user.Id);
                 await userReference.Set(userMap);
-                Log.Debug(TAG, $"InsertAsync: Insert User to Firestore complited");
+                Log.Debug(ProManager.TAG, $"InsertAsync: Insert User to Firestore complited");
                 return true; // Indicate success
             }
             catch (FirebaseFirestoreException ex)
             {
-                Log.Error(TAG, $"InsertAsync: Insert User to Firestore failed: {ex.Message}");
+                Log.Error(ProManager.TAG, $"InsertAsync: Insert User to Firestore failed: {ex.Message}");
                 return false; // Indicate failure
             }
             catch (System.Exception ex)
             {
-                Log.Error(TAG, $"MyApp: Insert User to Firestore failed: {ex.Message}");
+                Log.Error(ProManager.TAG, $"MyApp: Insert User to Firestore failed: {ex.Message}");
                 return false; // Indicate failure
             }
         }
-        #endregion
-
-        public class TaskCompletionListeners : Java.Lang.Object, IOnSuccessListener, IOnFailureListener //using Android.Gms.Tasks;
+		public static async Task<Model.User> GetUserById(string userId)
 		{
-			public event EventHandler<TaskSuccessEventArgs> Success;
-			public event EventHandler<TaskCompletionFailureEventArgs> Failure;
+			Model.User newuser = null;
+			try
+			{
+                DocumentReference userRef = FirebaseFirestore.Instance
+                .Collection("users")
+                .Document(userId);
 
-			//Success
-			public class TaskCompletionFailureEventArgs : EventArgs
+                var userObject = await userRef.Get();
+				
+				newuser = new Model.User()
+				{
+					Id = userId,
+					FirstName = ((DocumentSnapshot)userObject).Get("FirstName").ToString(),
+					LastName = ((DocumentSnapshot)userObject).Get("LastName").ToString(),
+					UserEmail = ((DocumentSnapshot)userObject).Get("UserEmail").ToString(),
+					UserMobile = ((DocumentSnapshot)userObject).Get("UserMobile").ToString(),
+					UserPass = ((DocumentSnapshot)userObject).Get("UserPassword").ToString(),
+					IsAdmin = bool.Parse(((DocumentSnapshot)userObject).Get("IsAdmin").ToString())
+				};
+                Log.Debug(ProManager.TAG, $"GetUserById: Get User from Firestore DB success");
+                return newuser;
+            }
+			catch (FirebaseFirestoreException ex)
 			{
-				public string Cause { get; set; }
-			}
-			//Failure
-			public class TaskSuccessEventArgs : EventArgs
+                Log.Debug(ProManager.TAG, $"GetUserByID: Get User from Firestore failed: {ex.Message}");
+                return null; // Indicate failure
+            }
+			catch (System.Exception ex)
 			{
-				public Java.Lang.Object Result { get; set; }
+                Log.Debug(ProManager.TAG, $"GetUserByID general error: {ex.Message}");
+                return null;
 			}
-			public void OnFailure(Java.Lang.Exception e)
-			{
-				Failure?.Invoke(this, new TaskCompletionFailureEventArgs { Cause = e.Message });
-			}
+        }
+        public static async Task<List<Model.User>> GetUsersCollection()
+        {
+			List <Model.User> users = new List <Model.User>();
 
-			public void OnSuccess(Java.Lang.Object result)
+			try
 			{
-				Success?.Invoke(this, new TaskSuccessEventArgs { Result = result });
-			}
-		}
-	}
+                var documents = await FirebaseFirestore.Instance.Collection("users").Get();
+				var FirestoreUsersCollection = (QuerySnapshot)documents;
+
+                if (!FirestoreUsersCollection.IsEmpty)
+                {
+                    var usersCollection = FirestoreUsersCollection.Documents;
+                    foreach (DocumentSnapshot item in usersCollection)
+                    {
+                        Model.User user = new Model.User()
+                        {
+                            Id = item.Id,
+                            FirstName = item.Get("FirstName").ToString(),
+                            LastName = item.Get("LastName").ToString(),
+                            UserEmail = item.Get("UserEmail").ToString(),
+                            UserMobile = item.Get("UserMobile").ToString(),
+                            UserPass = item.Get("UserPassword").ToString(),
+                            IsAdmin = bool.Parse(item.Get("IsAdmin").ToString())
+                        }; 
+						users.Add(user);
+                    }
+					Log.Debug(ProManager.TAG, $"GetUsersCollection: loaded successfully! " +
+											  $"Count: {users.Count}");                   
+                }
+                return users;
+            }
+            catch (FirebaseFirestoreException ex)
+            {
+                Log.Debug(ProManager.TAG, $"GetUsersCollection failed: {ex.Message}");
+                return users; // Indicate failure
+            }
+            catch (System.Exception ex)
+            {
+                Log.Debug(ProManager.TAG, $"GetUsersCollection general error: {ex.Message}");
+                return users;
+            }
+        }
+        public static void FetchUsersListener()
+        {
+            FirestoreEventListener = new FirestoreEventListener();
+            FirebaseFirestore.Instance
+                .Collection("users")
+                .AddSnapshotListener(FirestoreEventListener);
+        }     
+        #endregion
+    }
+    public class FirestoreEventListener : Java.Lang.Object, Firebase.Firestore.IEventListener
+    {
+        public event EventHandler<TaskListenerEventArgs> getEvent;
+        public class TaskListenerEventArgs : EventArgs
+        {
+            public Java.Lang.Object Result { get; set; }
+        }
+        public void OnEvent(Java.Lang.Object obj, FirebaseFirestoreException error)
+        {
+            getEvent?.Invoke(this, new TaskListenerEventArgs { Result = obj });
+        }
+    }
 }

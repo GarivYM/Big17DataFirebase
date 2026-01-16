@@ -32,7 +32,6 @@ namespace Big17DataFirebase2
 
 			InitializeViews();
 		}
-
         private void InitializeViews()
         {
 			_firstName = FindViewById<EditText>(Resource.Id.et_first_name);
@@ -44,7 +43,6 @@ namespace Big17DataFirebase2
 
             _btnSignUp.Click += BtnSignUp_Click;
         }
-
         private void BtnSignUp_Click(object sender, EventArgs e)
         {
 			_user = new Model.User()
@@ -58,7 +56,6 @@ namespace Big17DataFirebase2
 
 			RegisterNewUser();
         }
-
         private async void RegisterNewUser()
         {
             ShowProgressBar(true);
@@ -79,7 +76,6 @@ namespace Big17DataFirebase2
                 Toast.MakeText(this, $"Firebase: Add new user to Auth failed!", ToastLength.Short).Show();
             }
         }
-
         private async void RegisterUserInFireStore()
         {
             //1. Create new user in Firestore
@@ -88,7 +84,11 @@ namespace Big17DataFirebase2
             {
                 Log.Debug(ProManager.TAG, $"Firebase: Add new user to FireStore success!");                
                 ShowProgressBar(false);
-                Toast.MakeText(this, $"Register user success!", ToastLength.Short).Show();
+                //Toast.MakeText(this, $"Register user success!", ToastLength.Short).Show();
+
+                //Set Current User
+                ProManager.CurrentUser = _user;
+                StartActivity(typeof(MainPage));
             }
             else //Fail
             {
@@ -97,8 +97,6 @@ namespace Big17DataFirebase2
                 Toast.MakeText(this, $"Firebase: Add new user to FireStore failed!", ToastLength.Short).Show();
             }
         }
-
-  
         private void ShowProgressBar(bool show)
         {
             //android:background="@android:color/transparent"

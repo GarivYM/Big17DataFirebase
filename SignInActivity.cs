@@ -23,8 +23,6 @@ namespace Big17DataFirebase2
 		private TextView btnSighUp;
 		private Dialog mProgressDialog;
 
-		
-
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
 			base.OnCreate(savedInstanceState);
@@ -58,9 +56,8 @@ namespace Big17DataFirebase2
 			if (userAuthID != null) //Success
 			{
 				Log.Debug(ProManager.TAG, $"Firebase Auth SignIn success: {etEmail.Text} {etPass.Text}");
-				Toast.MakeText(this, "SignIn Success", ToastLength.Short).Show();
-				//GetCurrentUserFromDB(userAuthID);
-				ShowProgressBar(false);
+				//Toast.MakeText(this, "SignIn Success", ToastLength.Short).Show();
+				GetCurrentUserFromDB(userAuthID);			
 			}
 			else
 			{
@@ -69,7 +66,29 @@ namespace Big17DataFirebase2
 				Toast.MakeText(this, "SignIn Process failed", ToastLength.Short).Show();
 			}
 		}
-		public void OnClick(View v)
+
+        private async void GetCurrentUserFromDB(string userAuthID)
+        {
+			var userfromDB = await FireBaseHelper.GetUserById(userAuthID);
+
+			if (userfromDB != null)
+			{
+                //Get current user from Firestore DB
+                //Set Current User 
+                ShowProgressBar(false);
+                ProManager.CurrentUser = userfromDB;
+				StartActivity(typeof(MainPage));
+			}
+			else
+			{
+                ShowProgressBar(false);
+				Log.Debug(ProManager.TAG, "SighIn: Failed get user from DB");
+				Toast.MakeText(this, "SignIn Process failed", ToastLength.Short).Show();
+            }
+			
+        }
+
+        public void OnClick(View v)
 		{
 
 			if (v == btnSignIn)

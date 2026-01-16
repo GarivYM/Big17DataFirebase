@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "45461801744",
+    "project_id": "big17datafb",
+    "storage_bucket": "big17datafb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:45461801744:android:00b598e9b984535ceff395",
+        "android_client_info": {
+          "package_name": "com.companyname.big17datafirebase2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfuUKAoRD0bMJvqgh8sxV5DuOAgSMjIp4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
