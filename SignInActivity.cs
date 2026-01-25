@@ -44,14 +44,14 @@ namespace Big17DataFirebase2
 			//Debug Mode
 			if (ProManager.DebugMode)
 			{
-				etEmail.Text = "kostya@mail.com";
+				etEmail.Text = "zabelinsky.k@gmail.com";
 				etPass.Text = "123456";
 				ShowProgressBar(true);
 				SignInWithEmailAndPassword();
 			}
 		}
 		private async void SignInWithEmailAndPassword()
-		{
+		{ 
 			string userAuthID = await FireBaseHelper.SignInUserAsync(etEmail.Text, etPass.Text);
 			if (userAuthID != null) //Success
 			{

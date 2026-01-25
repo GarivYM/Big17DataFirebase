@@ -4,6 +4,8 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using AndroidX.RecyclerView.Widget;
+using Big17DataFirebase2.Adapters;
 using Big17DataFirebase2.BusinessLogic;
 using Big17DataFirebase2.Model;
 using Big17DataFirebase2.Service;
@@ -18,8 +20,11 @@ namespace Big17DataFirebase2
     [Activity(Label = "MainPage")]
     public class MainPage : Activity
     {
+        RecyclerView usersRecyclerView;
+        RecyclerView.LayoutManager layoutManager;
+        UsersRViewAdapter userAdapter;
+
         TextView tvusername, tvisadmin, tvuserslist;
-        Button btnRemoveUser;
         Dialog mProgressDialog;
         List<User> users;
 
@@ -35,8 +40,23 @@ namespace Big17DataFirebase2
         {
             tvusername = FindViewById<TextView>(Resource.Id.tvUsername);
             tvisadmin = FindViewById<TextView>(Resource.Id.tvIsAdmin);
-            tvuserslist = FindViewById<TextView>(Resource.Id.tvUserslist);
-            btnRemoveUser = FindViewById<Button>(Resource.Id.btnUserRemove);
+            tvuserslist = FindViewById<TextView>(Resource.Id.tvUserslist);            
+
+            layoutManager = new LinearLayoutManager(this);
+            usersRecyclerView = FindViewById<RecyclerView>(Resource.Id.recyclerView);
+
+            userAdapter = new UsersRViewAdapter(this, users);
+            userAdapter.ItemClick += OnItemClick;
+            usersRecyclerView.SetAdapter(userAdapter);
+        }
+
+        void OnItemClick(object sender, int position)
+        {
+            int itemIndewx = position + 1;          
+            //users[position].ImageId = Resources.GetIdentifier("next", "drawable", PackageName);          
+            //userAdapter.NotifyItemChanged(position);
+
+            Toast.MakeText(this, "This is item number " + itemIndewx, ToastLength.Short).Show();
         }
 
         protected override void OnResume()
@@ -87,7 +107,8 @@ namespace Big17DataFirebase2
                         };
                         users.Add(_user);
                     }
-                    FillUsersList();
+                    //FillUsersList(); //Fill users into textview
+                    
                 }
             };
         }
