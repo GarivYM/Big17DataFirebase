@@ -45,7 +45,9 @@ namespace Big17DataFirebase2
             layoutManager = new LinearLayoutManager(this);
             usersRecyclerView = FindViewById<RecyclerView>(Resource.Id.recyclerView);
 
+            users = new List<User>();
             userAdapter = new UsersRViewAdapter(this, users);
+            usersRecyclerView.SetLayoutManager(layoutManager);
             userAdapter.ItemClick += OnItemClick;
             usersRecyclerView.SetAdapter(userAdapter);
         }
@@ -103,12 +105,14 @@ namespace Big17DataFirebase2
                             UserEmail = item.Get("UserEmail").ToString(),
                             UserMobile = item.Get("UserMobile").ToString(),
                             UserPass = item.Get("UserPassword").ToString(),
-                            IsAdmin = bool.Parse(item.Get("IsAdmin").ToString())
+                            IsAdmin = bool.Parse(item.Get("IsAdmin").ToString()),
+                            ImageId = Resource.Drawable.maleicon
                         };
                         users.Add(_user);
                     }
                     //FillUsersList(); //Fill users into textview
-                    
+
+                    userAdapter.NotifyDataSetChanged();
                 }
             };
         }
