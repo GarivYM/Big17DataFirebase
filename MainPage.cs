@@ -53,12 +53,12 @@ namespace Big17DataFirebase2
         }
 
         void OnItemClick(object sender, int position)
-        {
-            int itemIndewx = position + 1;          
-            //users[position].ImageId = Resources.GetIdentifier("next", "drawable", PackageName);          
-            //userAdapter.NotifyItemChanged(position);
+        { 
+            Intent intent = new Intent(this, typeof(AccountActivity));
+            intent.PutExtra("userID", users[position].Id);
+            StartActivity(intent);
 
-            Toast.MakeText(this, "This is item number " + itemIndewx, ToastLength.Short).Show();
+            //Toast.MakeText(this, "This is item number " + itemIndewx, ToastLength.Short).Show();
         }
 
         protected override void OnResume()
