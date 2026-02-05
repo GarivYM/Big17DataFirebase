@@ -60,6 +60,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccountActivity.cs" />
     <Compile Include="Adapters\UsersRViewAdapter.cs" />
     <Compile Include="Adapters\UserViewHolder.cs" />
     <Compile Include="BusinessLogic\ProManager.cs" />
@@ -156,6 +157,11 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\usercard_layout.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\account_layout1.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
