@@ -18,7 +18,7 @@ namespace Big17DataFirebase2
     [Activity(Label = "AccountActivity")]
     public class AccountActivity : Activity
     {
-        EditText _firstName, _lastName, _userEmail, _userPassword, _userMobile;
+        EditText _firstName, _lastName, _userEmail, _userMobile;
         ImageButton _btnDelete;
         Button _btnUpdate;
         Dialog mProgressDialog;
@@ -37,7 +37,6 @@ namespace Big17DataFirebase2
             _firstName = FindViewById<EditText>(Resource.Id.et_account_first_name);
             _lastName = FindViewById<EditText>(Resource.Id.et_account_last_name);
             _userEmail = FindViewById<EditText>(Resource.Id.et_account_email);
-            _userPassword = FindViewById<EditText>(Resource.Id.et_account_password);
             _userMobile = FindViewById<EditText>(Resource.Id.et_account_mobile);
             _btnUpdate = FindViewById<Button>(Resource.Id.btn_account_update);
             _btnDelete = FindViewById<ImageButton>(Resource.Id.ibAccountDelete);
@@ -82,13 +81,32 @@ namespace Big17DataFirebase2
             _firstName.Text = _user.FirstName;
             _lastName.Text = _user.LastName;
             _userEmail.Text = _user.UserEmail;
-            _userPassword.Text = _user.UserPass;
             _userMobile.Text = _user.UserMobile;
         }
 
-        private void Update_Click(object sender, EventArgs e)
+        private async void Update_Click(object sender, EventArgs e)
         {
-            
+            _user.FirstName = _firstName.Text;
+            _user.LastName = _lastName.Text;
+            _user.UserMobile = _userMobile.Text;
+
+            try
+            {
+                ShowProgressBar(true);
+                await FireBaseHelper.UpdateUser(_user);
+
+                ShowProgressBar(false);
+                Toast.MakeText(this,"Update success",ToastLength.Short).Show();
+
+                if (string.IsNullOrEmpty(_userId)) //Update Current user
+                {
+                    ProManager.CurrentUser = _user;
+                }
+            }
+            catch (Exception ex)
+            {
+                Toast.MakeText(this, ex.Message, ToastLength.Short).Show();
+            }
         }
 
         private void ShowProgressBar(bool show)

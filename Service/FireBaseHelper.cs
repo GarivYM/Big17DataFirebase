@@ -2,7 +2,6 @@
 using Android.Content;
 using Android.Content.Res;
 using Android.Gms.Extensions;
-using Android.Gms.Tasks;
 using Android.OS;
 using Android.Runtime;
 using Android.Util;
@@ -14,7 +13,7 @@ using Firebase;
 using Firebase.Auth;
 using Firebase.Firestore;
 using Firebase.Firestore.Auth;
-using Java.Lang;
+using Firebase.Firestore.Model;
 using Java.Util;
 using Newtonsoft.Json.Linq;
 using System;
@@ -260,6 +259,25 @@ namespace Big17DataFirebase2.Service
                 Log.Debug(ProManager.TAG, $"GetUsersCollection general error: {ex.Message}");
                 return users;
             }
+        }
+        public static async Task UpdateUser(Model.User user)
+        {
+			try
+			{
+				DocumentReference userRef = FirebaseFirestore.Instance
+											.Collection("users").Document(user.Id);
+
+				await userRef.Update("FirstName", user.FirstName);
+				await userRef.Update("LastName", user.LastName);
+				await userRef.Update("UserMobile", user.UserMobile);
+
+				Log.Debug(ProManager.TAG, $"FirebaseHelper: Update {user.UserEmail} success");
+			}
+			catch (System.Exception ex)
+			{
+				Log.Debug(ProManager.TAG, $"FirebaseHelper: Update {user.UserEmail} failed " + ex.Message);
+				throw new Exception($"Update {user.UserEmail} failed");
+			}
         }
         public static void FetchUsersListener()
         {

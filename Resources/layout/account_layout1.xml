@@ -56,27 +56,13 @@ android:layout_height="match_parent">
 			android:layout_width="230dp"
 			android:layout_height="wrap_content"
 			android:inputType="textEmailAddress"
+			android:enabled="false"
 			android:id="@+id/et_account_email"
 			android:maxLines="1"
 			android:hint="Email"/>
 	</com.google.android.material.textfield.TextInputLayout>
 	<com.google.android.material.textfield.TextInputLayout
 		android:layout_below="@+id/account_input_email"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center_horizontal"
-		android:id="@+id/account_input_password">
-		<EditText
-			android:layout_width="230dp"
-			android:layout_height="wrap_content"
-			android:inputType="textPassword"
-			android:id="@+id/et_account_password"
-			android:maxLines="1"
-			android:hint="Password"
-    />
-	</com.google.android.material.textfield.TextInputLayout>
-	<com.google.android.material.textfield.TextInputLayout
-		android:layout_below="@+id/account_input_password"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:gravity="center_horizontal"
@@ -98,7 +84,7 @@ android:layout_height="match_parent">
 		android:layout_height="50dp"
 		android:textSize="15dp"
 		android:background="#3495eb"
-		android:text="Sign Up"
+		android:text="Update"
 		android:id="@+id/btn_account_update"/>
 
 
