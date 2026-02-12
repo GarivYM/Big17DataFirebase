@@ -279,30 +279,6 @@ namespace Big17DataFirebase2.Service
 				throw new Exception($"Update {user.UserEmail} failed");
 			}
         }
-		public static async Task Delete(Model.User user)
-		{
-			
-			try
-			{
-                //1 SignIn as Deleted user
-                FirebaseAuth mAuth = FirebaseAuth.Instance;
-                await Reauthenticate(user);
-
-                //2 Delete Firestore entity
-                await FirebaseFirestore.Instance.Collection("users").Document(user.Id).Delete();
-
-                //3 Delete Auth entity
-                await mAuth.CurrentUser.Delete();
-
-                //4 ReAuth as Admin
-                await Reauthenticate(ProManager.CurrentUser);
-            }
-            catch (Exception ex)
-			{
-                Log.Debug(ProManager.TAG, $"Delete user failed! " + ex.Message);
-				throw new Exception("Delete user failed!");
-            }
-        }
         public static async Task ReauthenticateAndRemove(Model.User userToDelete)
         {
             try
@@ -332,7 +308,33 @@ namespace Big17DataFirebase2.Service
                 throw new Exception("Delete user failed!");
             }
         }
-        public static void FetchUsersListener()
+		public static async Task Delete(Model.User userToDelete)
+		{
+			try
+			{				
+				// Create the credential for the account being deleted
+				AuthCredential credential = EmailAuthProvider.GetCredential(userToDelete.UserEmail, userToDelete.UserPass);
+
+				// Reauthenticate the ACTIVE user session specifically
+				await FirebaseAuth.Instance.SignInWithCredential(credential);
+
+				// Now delete the Firestore data
+				await FirebaseFirestore.Instance.Collection("users").Document(userToDelete.Id).Delete();
+
+				// Now delete the Auth record
+				await FirebaseAuth.Instance.CurrentUser.DeleteAsync();
+
+				// Reauthenticate the ACTIVE user session to Current User CredentiaLS
+				credential = EmailAuthProvider.GetCredential(ProManager.CurrentUser.UserEmail, ProManager.CurrentUser.UserPass);
+				await FirebaseAuth.Instance.SignInWithCredential(credential);
+			}
+			catch (Exception ex)
+			{
+				Log.Debug(ProManager.TAG, $"Delete user failed! " + ex.Message);
+				throw new Exception("Delete user failed!");
+			}
+		}
+		public static void FetchUsersListener()
         {
             FirestoreEventListener = new FirestoreEventListener();
             Registration = FirebaseFirestore.Instance

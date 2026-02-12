@@ -29,7 +29,8 @@ namespace Big17DataFirebase2
 
 			//Debug Mode
 			if (ProManager.DebugMode)
-				StartActivity(typeof(SignInActivity));
+				StartActivity(typeof(SignUpActivity));
+				//StartActivity(typeof(SignInActivity));
 		}
 
 		private void InitialViews()

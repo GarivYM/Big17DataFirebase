@@ -45,8 +45,9 @@ namespace Big17DataFirebase2
 
             _userId = Intent.GetStringExtra("userID");
 
-            if(!string.IsNullOrEmpty(_userId)) //Arrived from Users List (Admin)
-            {
+            //if(!string.IsNullOrEmpty(_userId)) //Arrived from Users List (Admin)
+            if(_userId != ProManager.CurrentUser.Id) //Show delete button if not current user
+			{
                 ShowProgressBar(true);
                 try
                 {
@@ -75,9 +76,10 @@ namespace Big17DataFirebase2
             try
             {
                 ShowProgressBar(true);
-                await FireBaseHelper.Delete(_user);
+				await FireBaseHelper.Delete(_user);
+				//await FireBaseHelper.ReauthenticateAndRemove(_user);
 
-                ShowProgressBar(false);
+				ShowProgressBar(false);
                 Toast.MakeText(this, "User deleted successfuly!", ToastLength.Short).Show();
                 Finish();
             }
