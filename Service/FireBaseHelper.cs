@@ -303,22 +303,6 @@ namespace Big17DataFirebase2.Service
 				throw new Exception("Delete user failed!");
             }
         }
-        public static async Task Reauthenticate(Model.User user)
-        {
-			try
-			{
-				FirebaseAuth mAuth = FirebaseAuth.Instance;
-				AuthCredential credential = EmailAuthProvider.GetCredential(
-																			 user.UserEmail,
-																			 user.UserPass);
-				await mAuth.SignInWithCredential(credential);
-			}
-			catch (Exception ex)
-			{
-				Log.Debug(ProManager.TAG, $"Reauthenticate {user.UserEmail} failed! " + ex.Message);
-				throw new Exception("Reauthenticate failed!");
-            }           
-        }
         public static async Task ReauthenticateAndRemove(Model.User userToDelete)
         {
             try
@@ -337,11 +321,15 @@ namespace Big17DataFirebase2.Service
 
                 // Now delete the Firestore data
                 await FirebaseFirestore.Instance.Collection("users").Document(userToDelete.Id).Delete();
+
+                // Reauthenticate the ACTIVE user session to Current User CredentiaLS
+                credential = EmailAuthProvider.GetCredential(ProManager.CurrentUser.UserEmail, ProManager.CurrentUser.UserPass);
+                await firebaseUser.ReauthenticateAsync(credential);
             }
             catch (Exception ex)
             {
-                Log.Debug("ERROR", ex.Message);
-                throw;
+                Log.Debug(ProManager.TAG, $"Delete user failed! " + ex.Message);
+                throw new Exception("Delete user failed!");
             }
         }
         public static void FetchUsersListener()
