@@ -41,7 +41,7 @@ namespace Big17DataFirebase2
             _btnUpdate = FindViewById<Button>(Resource.Id.btn_account_update);
             _btnDelete = FindViewById<ImageButton>(Resource.Id.ibAccountDelete);
             _btnUpdate.Click += Update_Click;
-            _btnDelete.Click += _btnDelete_Click;
+            _btnDelete.Click += BtnDelete_Click;
 
             _userId = Intent.GetStringExtra("userID");
 
@@ -67,13 +67,25 @@ namespace Big17DataFirebase2
                 _user = ProManager.CurrentUser;
                 FillUserDetails();
             }
-
-
         }
 
-        private void _btnDelete_Click(object sender, EventArgs e)
-        {
-            Toast.MakeText(this, "Are you shure to delete this user?", ToastLength.Short).Show();
+        private async void BtnDelete_Click(object sender, EventArgs e)
+        { 
+            //Alert YES NO 
+            try
+            {
+                ShowProgressBar(true);
+                await FireBaseHelper.Delete(_user);
+
+                ShowProgressBar(false);
+                Toast.MakeText(this, "User deleted successfuly!", ToastLength.Short).Show();
+                Finish();
+            }
+            catch (Exception ex)
+            {
+                ShowProgressBar(false);
+                Toast.MakeText(this, ex.Message, ToastLength.Short).Show();
+            }      
         }
 
         private void FillUserDetails()

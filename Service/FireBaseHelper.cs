@@ -28,10 +28,10 @@ namespace Big17DataFirebase2.Service
 {
 	public class FireBaseHelper
 	{
-		public static FirestoreEventListener FirestoreEventListener;
+        public static IListenerRegistration Registration;
+        public static FirestoreEventListener FirestoreEventListener;
         protected static FireBaseHelper me;
-		private FirebaseApp app;
-		
+		private FirebaseApp app;	
 		static FireBaseHelper() { me = new FireBaseHelper(); }
 
 		protected FireBaseHelper() { InitializeFirebase(); }
@@ -129,7 +129,7 @@ namespace Big17DataFirebase2.Service
 				return null; // Indicate failure
 			}
 		}
-		public static async Task<string> RegisterUserForAuth(Model.User user)
+        public static async Task<string> RegisterUserForAuth(Model.User user)
 		{
             try
             {
@@ -279,13 +279,84 @@ namespace Big17DataFirebase2.Service
 				throw new Exception($"Update {user.UserEmail} failed");
 			}
         }
+		public static async Task Delete(Model.User user)
+		{
+			
+			try
+			{
+                //1 SignIn as Deleted user
+                FirebaseAuth mAuth = FirebaseAuth.Instance;
+                await Reauthenticate(user);
+
+                //2 Delete Firestore entity
+                await FirebaseFirestore.Instance.Collection("users").Document(user.Id).Delete();
+
+                //3 Delete Auth entity
+                await mAuth.CurrentUser.Delete();
+
+                //4 ReAuth as Admin
+                await Reauthenticate(ProManager.CurrentUser);
+            }
+            catch (Exception ex)
+			{
+                Log.Debug(ProManager.TAG, $"Delete user failed! " + ex.Message);
+				throw new Exception("Delete user failed!");
+            }
+        }
+        public static async Task Reauthenticate(Model.User user)
+        {
+			try
+			{
+				FirebaseAuth mAuth = FirebaseAuth.Instance;
+				AuthCredential credential = EmailAuthProvider.GetCredential(
+																			 user.UserEmail,
+																			 user.UserPass);
+				await mAuth.SignInWithCredential(credential);
+			}
+			catch (Exception ex)
+			{
+				Log.Debug(ProManager.TAG, $"Reauthenticate {user.UserEmail} failed! " + ex.Message);
+				throw new Exception("Reauthenticate failed!");
+            }           
+        }
+        public static async Task ReauthenticateAndRemove(Model.User userToDelete)
+        {
+            try
+            {
+                FirebaseAuth mAuth = FirebaseAuth.Instance;
+                var firebaseUser = mAuth.CurrentUser;
+
+                // Create the credential for the account being deleted
+                AuthCredential credential = EmailAuthProvider.GetCredential(userToDelete.UserEmail, userToDelete.UserPass);
+
+                // Reauthenticate the ACTIVE user session specifically
+                await firebaseUser.ReauthenticateAsync(credential);
+
+                // Now delete the Auth record
+                await firebaseUser.DeleteAsync();
+
+                // Now delete the Firestore data
+                await FirebaseFirestore.Instance.Collection("users").Document(userToDelete.Id).Delete();
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("ERROR", ex.Message);
+                throw;
+            }
+        }
         public static void FetchUsersListener()
         {
             FirestoreEventListener = new FirestoreEventListener();
-            FirebaseFirestore.Instance
-                .Collection("users")
-                .AddSnapshotListener(FirestoreEventListener);
-        }     
+            Registration = FirebaseFirestore.Instance
+				.Collection("users")
+				.AddSnapshotListener(FirestoreEventListener);
+        }
+        public static void StopUsersListener()
+        {
+            Registration?.Remove();
+            Registration = null;
+            FirestoreEventListener = null;
+        }
         #endregion
     }
     public class FirestoreEventListener : Java.Lang.Object, Firebase.Firestore.IEventListener

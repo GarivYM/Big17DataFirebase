@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -77,7 +78,7 @@ namespace Big17DataFirebase2
         protected override void OnPause()
         {
             base.OnPause();
-            FireBaseHelper.FirestoreEventListener = null;
+            FireBaseHelper.StopUsersListener();
         }
 
         private void FetchUsersFromDB()
@@ -91,53 +92,36 @@ namespace Big17DataFirebase2
                 else
                     users = new List<User>();
 
-                var snapshot = (QuerySnapshot)args.Result;
-                if (!snapshot.IsEmpty)
+                try
                 {
-                    var documents = snapshot.Documents;
-                    foreach (DocumentSnapshot item in documents)
+                    var snapshot = (QuerySnapshot)args.Result;
+                    if (!snapshot.IsEmpty)
                     {
-                        User _user = new User()
+                        var documents = snapshot.Documents;
+                        foreach (DocumentSnapshot item in documents)
                         {
-                            Id = item.Id,
-                            FirstName = item.Get("FirstName").ToString(),
-                            LastName = item.Get("LastName").ToString(),
-                            UserEmail = item.Get("UserEmail").ToString(),
-                            UserMobile = item.Get("UserMobile").ToString(),
-                            UserPass = item.Get("UserPassword").ToString(),
-                            IsAdmin = bool.Parse(item.Get("IsAdmin").ToString()),
-                            ImageId = Resource.Drawable.maleicon
-                        };
-                        users.Add(_user);
-                    }
-                    //FillUsersList(); //Fill users into textview
+                            User _user = new User()
+                            {
+                                Id = item.Id,
+                                FirstName = item.Get("FirstName").ToString(),
+                                LastName = item.Get("LastName").ToString(),
+                                UserEmail = item.Get("UserEmail").ToString(),
+                                UserMobile = item.Get("UserMobile").ToString(),
+                                UserPass = item.Get("UserPassword").ToString(),
+                                IsAdmin = bool.Parse(item.Get("IsAdmin").ToString()),
+                                ImageId = Resource.Drawable.maleicon
+                            };
+                            users.Add(_user);
+                        }
 
-                    userAdapter.NotifyDataSetChanged();
+                        userAdapter.NotifyDataSetChanged();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Debug(ProManager.TAG, ex.Message);
                 }
             };
-        }
-
-        private async void GetUsersFromDB()
-        {            
-            users = await FireBaseHelper.GetUsersCollection();
-            if(users.Count > 0)
-            {
-                FillUsersList();
-            }
-            else
-            {
-                tvuserslist.Text = "Users collection is empty...";
-            }
-            ShowProgressBar(false);
-        }
-
-        private void FillUsersList()
-        {
-            tvuserslist.Text = "Users List:";
-            foreach (var user in users)
-            {
-                tvuserslist.Text += $"\n{user.FirstName} {user.UserEmail}";
-            }
         }
 
         private void ShowProgressBar(bool show)
