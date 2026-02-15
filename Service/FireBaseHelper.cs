@@ -129,10 +129,26 @@ namespace Big17DataFirebase2.Service
 				return null; // Indicate failure
 			}
 		}
-        public static async Task<string> RegisterUserForAuth(Model.User user)
-		{
+        public static async Task<string> InsertAsync(Model.User user)
+        {
             try
             {
+                //Add user account to Firebase Auth Module
+                user.Id = await RegisterUserForAuth(user);
+                await AddUserToFirestore(user);
+                return user.Id;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ProManager.TAG, $"Insert user failed: {ex.Message}");
+                throw new Exception("Insert user failed");
+            }
+        }
+        public static async Task<string> RegisterUserForAuth(Model.User user)
+		{
+            //Add user account to Firebase Auth Module
+            try
+            {               
                 FirebaseAuth mAuth = FirebaseAuth.Instance;
                 //using Android.Gms.Extensions;
                 await mAuth.CreateUserWithEmailAndPasswordAsync(user.UserEmail, user.UserPass);
@@ -142,16 +158,16 @@ namespace Big17DataFirebase2.Service
             }
             catch (FirebaseAuthException ex)
             {
-                Log.Error(ProManager.TAG, $"SignInUserAsync: User Auth SignIn failed: {ex.Message}");
-                return null; // Indicate failure
+                Log.Error(ProManager.TAG, $"RegisterUserForAuth: {ex.Message}");
+				throw new Exception("RegisterUserForAuth Failed!");
             }
             catch (System.Exception ex)
             {
-                Log.Error(ProManager.TAG, $"SignInUserAsync: User Auth SignIn failed, general error: {ex.Message}");
-                return null; // Indicate failure
+                Log.Error(ProManager.TAG, $"RegisterUserForAuth general error: {ex.Message}");
+                throw new Exception("RegisterUserForAuth Failed!");
             }           
-        }
-        public static async Task<bool> InsertAsync(Model.User user)
+        }		
+        public static async Task AddUserToFirestore(Model.User user)
         {
             try
             {
@@ -169,18 +185,17 @@ namespace Big17DataFirebase2.Service
                                                                         .Collection("users")
                                                                         .Document(user.Id);
                 await userReference.Set(userMap);
-                Log.Debug(ProManager.TAG, $"InsertAsync: Insert User to Firestore complited");
-                return true; // Indicate success
+                Log.Debug(ProManager.TAG, $"Add User to Firestore complited");
             }
             catch (FirebaseFirestoreException ex)
             {
-                Log.Error(ProManager.TAG, $"InsertAsync: Insert User to Firestore failed: {ex.Message}");
-                return false; // Indicate failure
+                Log.Error(ProManager.TAG, $"Add User to Firestore failed: {ex.Message}");
+				throw new Exception("Add User to Firestore failed");
             }
             catch (System.Exception ex)
             {
-                Log.Error(ProManager.TAG, $"MyApp: Insert User to Firestore failed: {ex.Message}");
-                return false; // Indicate failure
+                Log.Error(ProManager.TAG, $"Add User to Firestore failed: {ex.Message}");
+                throw new Exception("Add User to Firestore failed");
             }
         }
 		public static async Task<Model.User> GetUserById(string userId)
@@ -279,35 +294,6 @@ namespace Big17DataFirebase2.Service
 				throw new Exception($"Update {user.UserEmail} failed");
 			}
         }
-        public static async Task ReauthenticateAndRemove(Model.User userToDelete)
-        {
-            try
-            {
-                FirebaseAuth mAuth = FirebaseAuth.Instance;
-                var firebaseUser = mAuth.CurrentUser;
-
-                // Create the credential for the account being deleted
-                AuthCredential credential = EmailAuthProvider.GetCredential(userToDelete.UserEmail, userToDelete.UserPass);
-
-                // Reauthenticate the ACTIVE user session specifically
-                await firebaseUser.ReauthenticateAsync(credential);
-
-                // Now delete the Auth record
-                await firebaseUser.DeleteAsync();
-
-                // Now delete the Firestore data
-                await FirebaseFirestore.Instance.Collection("users").Document(userToDelete.Id).Delete();
-
-                // Reauthenticate the ACTIVE user session to Current User CredentiaLS
-                credential = EmailAuthProvider.GetCredential(ProManager.CurrentUser.UserEmail, ProManager.CurrentUser.UserPass);
-                await firebaseUser.ReauthenticateAsync(credential);
-            }
-            catch (Exception ex)
-            {
-                Log.Debug(ProManager.TAG, $"Delete user failed! " + ex.Message);
-                throw new Exception("Delete user failed!");
-            }
-        }
 		public static async Task Delete(Model.User userToDelete)
 		{
 			try
@@ -347,6 +333,10 @@ namespace Big17DataFirebase2.Service
             Registration = null;
             FirestoreEventListener = null;
         }
+        #endregion
+
+        #region App Data
+
         #endregion
     }
     public class FirestoreEventListener : Java.Lang.Object, Firebase.Firestore.IEventListener

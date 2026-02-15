@@ -70,43 +70,23 @@ namespace Big17DataFirebase2
         {
             ShowProgressBar(true);
 
-            //1. Create new user in Firebase Auth
-            string userAuthID = await FireBaseHelper.RegisterUserForAuth(_user);
-            if (userAuthID != null) //Success
+            try
             {
-                Log.Debug(ProManager.TAG, $"Firebase: Add new user to Auth success!");
-                _user.Id = userAuthID;
-                RegisterUserInFireStore();
+                //Add user to firebase database
+                _user.Id = await FireBaseHelper.InsertAsync(_user);
                 ShowProgressBar(false);
-            }
-            else //Fail
-            {
-                ShowProgressBar(false);
-                Log.Debug(ProManager.TAG, $"Firebase: Add new user to Auth failed!");
-                Toast.MakeText(this, $"Firebase: Add new user to Auth failed!", ToastLength.Short).Show();
-            }
-        }
-        private async void RegisterUserInFireStore()
-        {
-            //1. Create new user in Firestore
-            bool result = await FireBaseHelper.InsertAsync(_user);
-            if (result) //Success
-            {
-                Log.Debug(ProManager.TAG, $"Firebase: Add new user to FireStore success!");                
-                ShowProgressBar(false);
-                //Toast.MakeText(this, $"Register user success!", ToastLength.Short).Show();
+                Toast.MakeText(this, $"SignUp succeeded!", ToastLength.Short).Show();
 
                 //Set Current User
-                ProManager.CurrentUser = _user;
+                ProManager.CurrentUser = _user;        
                 StartActivity(typeof(MainPage));
             }
-            else //Fail
+            catch (Exception ex)
             {
                 ShowProgressBar(false);
-                Log.Debug(ProManager.TAG, $"Firebase: Add new user to FireStore failed!!");
-                Toast.MakeText(this, $"Firebase: Add new user to FireStore failed!", ToastLength.Short).Show();
+                Toast.MakeText(this, $"SignUp new user failed!", ToastLength.Short).Show();
             }
-        }
+        }        
         private void ShowProgressBar(bool show)
         {
             //android:background="@android:color/transparent"
