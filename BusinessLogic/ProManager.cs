@@ -15,7 +15,7 @@ namespace Big17DataFirebase2.BusinessLogic
 	public class ProManager
 	{
 		public static bool DebugMode = true;
-		public static readonly string TAG = "KOSTYAPP";
+		public static readonly string TAG = "YAIRAPP";
 
 		public static User CurrentUser { get; set; }
     }

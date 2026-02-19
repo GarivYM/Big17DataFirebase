@@ -44,7 +44,7 @@ namespace Big17DataFirebase2
 			//Debug Mode
 			if (ProManager.DebugMode)
 			{
-				etEmail.Text = "zabelinsky.k@gmail.com";
+				etEmail.Text = "yair@gmail.com";
 				etPass.Text = "123456";
 				ShowProgressBar(true);
 				SignInWithEmailAndPassword();

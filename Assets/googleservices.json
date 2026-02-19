@@ -1,29 +1,29 @@
 {
-  "project_info": {
-    "project_number": "45461801744",
-    "project_id": "big17datafb",
-    "storage_bucket": "big17datafb.firebasestorage.app"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:45461801744:android:00b598e9b984535ceff395",
-        "android_client_info": {
-          "package_name": "com.companyname.big17datafirebase2"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
+    "project_info": {
+        "project_number": "575182670806",
+        "project_id": "yairsmartlist",
+        "storage_bucket": "yairsmartlist.firebasestorage.app"
+    },
+    "client": [
         {
-          "current_key": "AIzaSyBfuUKAoRD0bMJvqgh8sxV5DuOAgSMjIp4"
+            "client_info": {
+                "mobilesdk_app_id": "1:575182670806:android:acfc981b283a617fda3277",
+                "android_client_info": {
+                    "package_name": "com.companyname.yairsmartlist"
+                }
+            },
+            "oauth_client": [],
+            "api_key": [
+                {
+                    "current_key": "AIzaSyB4xdB8LfBtENfbtN3sB71i1iTVBG5Zvvs"
+                }
+            ],
+            "services": {
+                "appinvite_service": {
+                    "other_platform_oauth_client": []
+                }
+            }
         }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    }
-  ],
-  "configuration_version": "1"
+    ],
+    "configuration_version": "1"
 }

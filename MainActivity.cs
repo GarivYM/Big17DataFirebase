@@ -15,7 +15,7 @@ namespace Big17DataFirebase2
     public class MainActivity : AppCompatActivity, Android.Views.View.IOnClickListener
 	{
 		TextView tvSignIn, tvSignUp;
-		private readonly string TAG = "KOSTYAPP";
+		private readonly string TAG = "YAIRAPP";
 
 		protected override void OnCreate(Bundle savedInstanceState)
         {
