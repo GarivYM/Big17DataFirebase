@@ -64,6 +64,8 @@
     <Compile Include="Adapters\UsersRViewAdapter.cs" />
     <Compile Include="Adapters\UserViewHolder.cs" />
     <Compile Include="BusinessLogic\ProManager.cs" />
+    <Compile Include="HomeActivity.cs" />
+    <Compile Include="ListActivity.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="MainPage.cs" />
     <Compile Include="Model\User.cs" />
@@ -162,6 +164,16 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\account_layout1.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\homepagelayout.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\listlayout.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>

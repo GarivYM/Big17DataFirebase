@@ -45,41 +45,52 @@ namespace Big17DataFirebase2
 
             _userId = Intent.GetStringExtra("userID");
 
-            //if(!string.IsNullOrEmpty(_userId)) //Arrived from Users List (Admin)
-            if(_userId != ProManager.CurrentUser.Id) //Show delete button if not current user
-			{
+            if (!string.IsNullOrEmpty(_userId) && _userId != ProManager.CurrentUser.Id)
+            {
+                // Viewing another user
                 ShowProgressBar(true);
                 try
                 {
                     _user = await FireBaseHelper.GetUserById(_userId);
                     FillUserDetails();
-                    _btnDelete.Visibility = ViewStates.Visible;
-                    ShowProgressBar(false);
+
+                    // Only admin can delete other users
+                    _btnDelete.Visibility = ProManager.CurrentUser.IsAdmin ? ViewStates.Visible : ViewStates.Gone;
                 }
                 catch (Exception ex)
                 {
-                    ShowProgressBar(false);
-                    Toast.MakeText(this,ex.Message, ToastLength.Short).Show();
+                    Toast.MakeText(this, ex.Message, ToastLength.Short).Show();
                 }
-               
+                finally
+                {
+                    ShowProgressBar(false);
+                }
             }
-            else //Arrived from Current User
+            else
             {
+                // Viewing self
                 _user = ProManager.CurrentUser;
                 FillUserDetails();
+
+                // Non-admins can delete themselves
+                _btnDelete.Visibility = !ProManager.CurrentUser.IsAdmin ? ViewStates.Visible : ViewStates.Gone;
             }
         }
+
 
         private async void BtnDelete_Click(object sender, EventArgs e)
         { 
             //Alert YES NO 
             try
             {
+                
+                StartActivity(typeof(SignInActivity));
                 ShowProgressBar(true);
-				await FireBaseHelper.Delete(_user);
-				//await FireBaseHelper.ReauthenticateAndRemove(_user);
+                await FireBaseHelper.Delete(_user);
+                
+                //await FireBaseHelper.ReauthenticateAndRemove(_user);
+                ShowProgressBar(false);
 
-				ShowProgressBar(false);
                 Toast.MakeText(this, "User deleted successfuly!", ToastLength.Short).Show();
                 Finish();
             }
@@ -107,6 +118,7 @@ namespace Big17DataFirebase2
             try
             {
                 ShowProgressBar(true);
+
                 await FireBaseHelper.UpdateUser(_user);
 
                 ShowProgressBar(false);

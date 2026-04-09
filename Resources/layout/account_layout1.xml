@@ -15,7 +15,7 @@ android:layout_height="match_parent">
 			android:layout_width="30dp"
 			android:layout_height="35dp"
 			android:background="@drawable/delete"
-			android:visibility="visible"
+			android:visibility="invisible"
 			android:id="@+id/ibAccountDelete"/>
 	</com.google.android.material.textfield.TextInputLayout>
 	<com.google.android.material.textfield.TextInputLayout
