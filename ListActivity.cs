@@ -13,7 +13,7 @@ using Firebase.Firestore;
 
 namespace Big17DataFirebase2
 {
-    [Activity(Label = "ListActivity" , MainLauncher = true)]
+    [Activity(Label = "ListActivity" , MainLauncher = false)]
     public class ListActivity : Activity
     {
         // UI

@@ -15,7 +15,7 @@ using Firebase.Firestore;
 
 namespace Big17DataFirebase2
 {
-    [Activity(Label = "HomeActivity", Theme = "@style/AppTheme", MainLauncher = false)]
+    [Activity(Label = "HomeActivity")]
 
     public class HomeActivity : Activity
     {
