@@ -338,6 +338,82 @@ namespace Big17DataFirebase2.Service
         #region App Data
 
         #endregion
+
+        #region Lists
+        public static async Task<string> CreateList(string title, string ownerId, string type)
+        {
+            try
+            {
+                HashMap listMap = new HashMap();
+                listMap.Put("title", title);
+                listMap.Put("ownerId", ownerId);
+                listMap.Put("type", type);
+                listMap.Put("sharedWith", new Java.Util.ArrayList());
+                listMap.Put("createdAt", new Java.Util.Date());
+
+                DocumentReference listRef = FirebaseFirestore.Instance
+                    .Collection("lists")
+                    .Document(); // auto ID
+
+                await listRef.Set(listMap);
+
+                return listRef.Id;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ProManager.TAG, "CreateList failed: " + ex.Message);
+                throw;
+            }
+        }
+        public static async Task AddItemToList(string listId, string text)
+        {
+            try
+            {
+                HashMap itemMap = new HashMap();
+                itemMap.Put("text", text);
+
+                DocumentReference itemRef = FirebaseFirestore.Instance
+                    .Collection("lists")
+                    .Document(listId)
+                    .Collection("items")
+                    .Document(); // auto ID
+
+                await itemRef.Set(itemMap);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ProManager.TAG, "AddItemToList failed: " + ex.Message);
+                throw;
+            }
+        }
+        public static async Task<List<string>> GetItems(string listId)
+        {
+            List<string> items = new List<string>();
+
+            try
+            {
+                var snapshot = await FirebaseFirestore.Instance
+                    .Collection("lists")
+                    .Document(listId)
+                    .Collection("items")
+                    .Get();
+
+                var docs = (QuerySnapshot)snapshot;
+
+                foreach (DocumentSnapshot doc in docs.Documents)
+                {
+                    items.Add(doc.Get("text").ToString());
+                }
+
+                return items;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ProManager.TAG, "GetItems failed: " + ex.Message);
+                return items;
+            }
+        }
+        #endregion
     }
     public class FirestoreEventListener : Java.Lang.Object, Firebase.Firestore.IEventListener
     {
