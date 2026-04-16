@@ -11,7 +11,7 @@ using System;
 
 namespace Big17DataFirebase2
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = false)]
     public class MainActivity : AppCompatActivity, Android.Views.View.IOnClickListener
 	{
 		TextView tvSignIn, tvSignUp;

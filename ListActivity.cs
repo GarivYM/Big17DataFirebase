@@ -79,7 +79,7 @@ namespace Big17DataFirebase2
         {
             FireBaseHelper.FetchUsersListener();
 
-            FireBaseHelper.FirestoreEventListener.getEvent += (error, args) =>
+            FireBaseHelper.listener.getEvent += (error, args) =>
             {
                 ShowProgressBar(false);
 

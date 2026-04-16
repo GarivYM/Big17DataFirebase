@@ -84,7 +84,7 @@ namespace Big17DataFirebase2
         private void FetchUsersFromDB()
         {
             FireBaseHelper.FetchUsersListener();
-            FireBaseHelper.FirestoreEventListener.getEvent += (error, args) =>
+            FireBaseHelper.listener.getEvent += (error, args) =>
             {
                 ShowProgressBar(false);
                 if (users != null)

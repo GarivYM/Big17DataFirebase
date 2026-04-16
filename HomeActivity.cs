@@ -8,27 +8,26 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Big17DataFirebase2.Adapters;
-using Big17DataFirebase2.BusinessLogic;
 using Big17DataFirebase2.Model;
 using Big17DataFirebase2.Service;
+using Firebase.Auth;
 using Firebase.Firestore;
 
 namespace Big17DataFirebase2
 {
-    [Activity(Label = "HomeActivity")]
-
+    [Activity(Label = "HomeActivity" , MainLauncher = true)]
     public class HomeActivity : Activity
     {
         // RecyclerView
         RecyclerView recyclerView;
         RecyclerView.LayoutManager layoutManager;
-        UsersRViewAdapter userAdapter;
+        ListsRViewAdapter listAdapter;
 
         // UI
         TextView tvJoin, tvAdd, tvTitle, tvUserslist;
 
         // Data
-        List<User> users;
+        List<List> lists;
         Dialog mProgressDialog;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -43,38 +42,33 @@ namespace Big17DataFirebase2
 
         private void InitializeViews()
         {
-            // Bind views
             tvJoin = FindViewById<TextView>(Resource.Id.tvJoin);
             tvAdd = FindViewById<TextView>(Resource.Id.tvAdd);
             tvTitle = FindViewById<TextView>(Resource.Id.tvTitle);
             tvUserslist = FindViewById<TextView>(Resource.Id.tvUserslist);
             recyclerView = FindViewById<RecyclerView>(Resource.Id.recyclerView);
 
-            // Title
-            tvTitle.Text = "Home Page";
+            tvTitle.Text = "My Lists";
 
-            // Clicks
             tvJoin.Click += TvJoin_Click;
             tvAdd.Click += TvAdd_Click;
 
-            // RecyclerView setup (SAME as MainPage)
             layoutManager = new LinearLayoutManager(this);
             recyclerView.SetLayoutManager(layoutManager);
 
-            users = new List<User>();
-            userAdapter = new UsersRViewAdapter(this, users);
+            lists = new List<List>();
+            listAdapter = new ListsRViewAdapter(lists);
 
-            userAdapter.ItemClick += OnItemClick;
+            listAdapter.ItemClick += OnItemClick;
 
-            recyclerView.SetAdapter(userAdapter);
+            recyclerView.SetAdapter(listAdapter);
         }
 
         private void OnItemClick(object sender, int position)
         {
             Intent intent = new Intent(this, typeof(ListActivity));
 
-            // Pass data if needed
-            intent.PutExtra("userID", users[position].Id);
+            intent.PutExtra("listId", lists[position].Id);
 
             StartActivity(intent);
         }
@@ -84,57 +78,57 @@ namespace Big17DataFirebase2
             base.OnResume();
 
             ShowProgressBar(true);
-            FetchUsersFromDB();
+            FetchListsFromDB();
         }
 
         protected override void OnPause()
         {
             base.OnPause();
-            FireBaseHelper.StopUsersListener();
+            FireBaseHelper.StopListsListener();
         }
 
-        private void FetchUsersFromDB()
+        private void FetchListsFromDB()
         {
-            FireBaseHelper.FetchUsersListener();
+            FireBaseHelper.FetchListsListener();
 
-            FireBaseHelper.FirestoreEventListener.getEvent += (error, args) =>
+            FireBaseHelper.listener.getEvent += (error, args) =>
             {
                 ShowProgressBar(false);
 
-                if (users != null)
-                    users.Clear();
-                else
-                    users = new List<User>();
+                if (lists == null)
+                    lists = new List<List>();
+
+                lists.Clear();
 
                 try
                 {
                     var snapshot = (QuerySnapshot)args.Result;
 
-                    if (!snapshot.IsEmpty)
+                    string currentUserId =
+                        FirebaseAuth.Instance.CurrentUser.Uid;
+
+                    foreach (DocumentSnapshot item in snapshot.Documents)
                     {
-                        foreach (DocumentSnapshot item in snapshot.Documents)
+                        string ownerId = item.Get("ownerId").ToString();
+
+                        if (ownerId == currentUserId)
                         {
-                            User _user = new User()
+                            List list = new List()
                             {
                                 Id = item.Id,
-                                FirstName = item.Get("FirstName").ToString(),
-                                LastName = item.Get("LastName").ToString(),
-                                UserEmail = item.Get("UserEmail").ToString(),
-                                UserMobile = item.Get("UserMobile").ToString(),
-                                UserPass = item.Get("UserPassword").ToString(),
-                                IsAdmin = bool.Parse(item.Get("IsAdmin").ToString()),
-                                ImageId = Resource.Drawable.maleicon
+                                Title = item.Get("title").ToString(),
+                                OwnerId = ownerId
                             };
 
-                            users.Add(_user);
+                            lists.Add(list);
                         }
-
-                        userAdapter.NotifyDataSetChanged();
                     }
+
+                    listAdapter.NotifyDataSetChanged();
                 }
                 catch (Exception ex)
                 {
-                    Log.Debug(ProManager.TAG, ex.Message);
+                    Log.Debug("HomeActivity", ex.Message);
                 }
             };
         }
@@ -146,7 +140,7 @@ namespace Big17DataFirebase2
                 mProgressDialog = new Dialog(this, Android.Resource.Style.ThemeNoTitleBar);
                 View view = LayoutInflater.From(this).Inflate(Resource.Layout.fb_progressbar, null);
 
-                mProgressDialog.Window.SetBackgroundDrawableResource(Resource.Color.mtrl_btn_transparent_bg_color);
+                mProgressDialog.Window.SetBackgroundDrawableResource(Android.Resource.Color.Transparent);
                 mProgressDialog.SetContentView(view);
                 mProgressDialog.SetCancelable(false);
                 mProgressDialog.Show();

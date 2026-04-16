@@ -8,11 +8,8 @@ using Android.Widget;
 using Big17DataFirebase2.BusinessLogic;
 using Big17DataFirebase2.Model;
 using Big17DataFirebase2.Service;
-using Firebase.Firestore.Auth;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Big17DataFirebase2
 {
@@ -85,7 +82,8 @@ namespace Big17DataFirebase2
             catch (Exception ex)
             {
                 ShowProgressBar(false);
-                Toast.MakeText(this, $"SignUp new user failed!", ToastLength.Short).Show();
+                Log.Error("SignUp", ex.Message);
+                Toast.MakeText(this, $"SignUp failed: {ex.Message}", ToastLength.Short).Show();
             }
         }        
         private void ShowProgressBar(bool show)

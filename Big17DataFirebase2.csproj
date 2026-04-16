@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccountActivity.cs" />
+    <Compile Include="Adapters\ListsRViewAdapter.cs" />
     <Compile Include="Adapters\UsersRViewAdapter.cs" />
     <Compile Include="Adapters\UserViewHolder.cs" />
     <Compile Include="BusinessLogic\ProManager.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="ListActivity.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="MainPage.cs" />
+    <Compile Include="Model\List.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -186,6 +188,11 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\listlayout.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\list_row.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>

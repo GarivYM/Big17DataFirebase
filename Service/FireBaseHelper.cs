@@ -29,7 +29,7 @@ namespace Big17DataFirebase2.Service
 	public class FireBaseHelper
 	{
         public static IListenerRegistration Registration;
-        public static FirestoreEventListener FirestoreEventListener;
+        public static FirestoreEventListener listener;
         protected static FireBaseHelper me;
 		private FirebaseApp app;	
 		static FireBaseHelper() { me = new FireBaseHelper(); }
@@ -320,25 +320,40 @@ namespace Big17DataFirebase2.Service
 				throw new Exception("Delete user failed!");
 			}
 		}
-		public static void FetchUsersListener()
+        public static void FetchListsListener()
         {
-            FirestoreEventListener = new FirestoreEventListener();
+            listener = new FirestoreEventListener();
+
+            Registration = FirebaseFirestore.Instance
+                .Collection("lists")
+                .AddSnapshotListener(listener);
+        }
+
+        public static void StopListsListener()
+        {
+            Registration?.Remove();
+            Registration = null;
+            listener = null;
+        }
+        public static void FetchUsersListener()
+        {
+            listener = new FirestoreEventListener();
             Registration = FirebaseFirestore.Instance
 				.Collection("users")
-				.AddSnapshotListener(FirestoreEventListener);
+				.AddSnapshotListener(listener);
         }
         public static void StopUsersListener()
         {
             Registration?.Remove();
             Registration = null;
-            FirestoreEventListener = null;
+            listener = null;
         }
         #endregion
 
         #region App Data
 
         #endregion
-
+        
         #region Lists
         public static async Task<string> CreateList(string title, string ownerId, string type)
         {
