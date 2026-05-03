@@ -9,9 +9,12 @@ using AndroidX.RecyclerView.Widget;
 using Big17DataFirebase2.Adapters;
 using Big17DataFirebase2.Model;
 using Big17DataFirebase2.Service;
+using Firebase.Auth;
 using Firebase.Firestore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Big17DataFirebase2
 {
@@ -49,7 +52,13 @@ namespace Big17DataFirebase2
             tvBar = FindViewById<TextView>(Resource.Id.tvBar);
             tvTitle = FindViewById<TextView>(Resource.Id.tvTitle);
             recyclerView = FindViewById<RecyclerView>(Resource.Id.recyclerView);
+            // Link the new Info Icon
+            ImageView btnInfo = FindViewById<ImageView>(Resource.Id.btnInfo);
 
+            // Trigger the popup when clicked
+            btnInfo.Click += async (s, e) => {
+                await ShowListInfoPopup();
+            };
             tvTitle.Text = title ?? "List Page";
 
             tvDelete.Click += TvDelete_Click;
@@ -165,6 +174,85 @@ namespace Big17DataFirebase2
                 }
             });
             builder.Show();
+        }
+        private async Task ShowListInfoPopup()
+        {
+            var firestore = FirebaseFirestore.Instance;
+            var currentUserId = FirebaseAuth.Instance.CurrentUser.Uid;
+            string listId = Intent.GetStringExtra("listId");
+
+            try
+            {
+                // 1. Fetch the result and CAST it to DocumentSnapshot
+                var result = await firestore.Collection("lists").Document(listId).Get();
+                var listDoc = result as DocumentSnapshot; // This is the fix for the 'Get' error
+
+                if (listDoc == null || !listDoc.Exists()) return;
+
+                // Use .Get() now that the compiler knows this is a DocumentSnapshot
+                string joinCode = listDoc.Get("joinCode")?.ToString() ?? "N/A";
+                string ownerId = listDoc.Get("ownerId")?.ToString();
+
+                // Cast the ArrayList properly
+                var sharedWith = listDoc.Get("sharedWith") as Java.Util.ArrayList;
+
+                // 2. Inflate the Dialog View
+                View dialogView = LayoutInflater.From(this).Inflate(Resource.Layout.dialog_list_info, null);
+                TextView tvJoinCode = dialogView.FindViewById<TextView>(Resource.Id.tvInfoJoinCode);
+                LinearLayout container = dialogView.FindViewById<LinearLayout>(Resource.Id.participantsContainer);
+
+                tvJoinCode.Text = joinCode;
+
+                // 3. Prepare UIDs
+                List<string> uids = new List<string>();
+                if (!string.IsNullOrEmpty(ownerId)) uids.Add(ownerId);
+                if (sharedWith != null)
+                {
+                    var array = sharedWith.ToArray();
+                    foreach (var id in array) uids.Add(id.ToString());
+                }
+
+                container.RemoveAllViews();
+
+                // 4. Loop and fetch user details
+                foreach (var uid in uids.Distinct())
+                {
+                    // CAST this result as well!
+                    var userResult = await firestore.Collection("users").Document(uid).Get();
+                    var userDoc = userResult as DocumentSnapshot;
+
+                    string fullName = "Unknown User";
+                    if (userDoc != null && userDoc.Exists())
+                    {
+                        fullName = $"{userDoc.Get("firstName")} {userDoc.Get("lastName")}";
+                    }
+
+                    List<string> tags = new List<string>();
+                    if (uid == ownerId) tags.Add("List Manager");
+                    if (uid == currentUserId) tags.Add("You");
+
+                    string tagString = tags.Count > 0 ? $" ({string.Join(", ", tags)})" : "";
+
+                    TextView tvPerson = new TextView(this);
+                    tvPerson.Text = $"• {fullName}{tagString}";
+                    tvPerson.TextSize = 16;
+                    tvPerson.SetPadding(0, 10, 0, 10);
+                    tvPerson.SetTextColor(Android.Graphics.Color.Black);
+
+                    container.AddView(tvPerson);
+                }
+
+                RunOnUiThread(() => {
+                    new AlertDialog.Builder(this)
+                        .SetView(dialogView)
+                        .SetPositiveButton("OK", (s, e) => { })
+                        .Show();
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("InfoPopup", "Error: " + ex.Message);
+            }
         }
     }
 }

@@ -386,25 +386,46 @@ namespace Big17DataFirebase2.Service
                 return false;
             }
         }
-        public static async Task<bool> JoinListByCode(string code, string userId)
+        private async Task JoinListByCode(string code)
         {
+            var firestore = FirebaseFirestore.Instance;
+            var currentUserId = FirebaseAuth.Instance.CurrentUser.Uid;
+
             try
             {
-                var query = await FirebaseFirestore.Instance.Collection("lists")
-                            .WhereEqualTo("listCode", code).Get();
+                var result = await firestore.Collection("lists")
+                                            .WhereEqualTo("joinCode", code)
+                                            .Get();
 
-                var documents = (QuerySnapshot)query;
-                if (documents.IsEmpty) return false;
+                var query = result as QuerySnapshot;
 
-                var listDoc = documents.Documents[0];
-                // Use FieldValue.ArrayUnion to add the user without duplicates
-                await listDoc.Reference.Update("sharedWith", FieldValue.ArrayUnion(userId));
-                return true;
+                if (query == null || query.IsEmpty)
+                {
+                    new Android.OS.Handler(Android.OS.Looper.MainLooper).Post(() => {
+                        // Explicitly calling Android.Widget.Toast to avoid conversion errors
+                        Android.Widget.Toast.MakeText(Android.App.Application.Context, "Invalid Code! No list found.", Android.Widget.ToastLength.Short).Show();
+                    });
+                    return;
+                }
+
+                var doc = query.Documents[0];
+                string listDocId = doc.Id;
+
+                await firestore.Collection("lists")
+                               .Document(listDocId)
+                               .Update("sharedWith", FieldValue.ArrayUnion(currentUserId));
+
+                new Android.OS.Handler(Android.OS.Looper.MainLooper).Post(() => {
+                    Android.Widget.Toast.MakeText(Android.App.Application.Context, "Successfully joined!", Android.Widget.ToastLength.Short).Show();
+                });
             }
             catch (Exception ex)
             {
-                Log.Error(ProManager.TAG, "JoinListByCode failed: " + ex.Message);
-                return false;
+                Log.Debug("JoinError", ex.Message);
+
+                new Android.OS.Handler(Android.OS.Looper.MainLooper).Post(() => {
+                    Android.Widget.Toast.MakeText(Android.App.Application.Context, "Error: Could not join list.", Android.Widget.ToastLength.Short).Show();
+                });
             }
         }
         public static async Task ToggleItemStatus(string listId, string itemId, bool isChecked)

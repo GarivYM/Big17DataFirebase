@@ -5,64 +5,70 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-  <RelativeLayout
-      android:id="@+id/topBar"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:padding="15dp">
-
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:text="Home Page"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="#333333" />
-
-    <TextView
-        android:id="@+id/tvUserFullName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:text="User Name"
-        android:textSize="16sp"
-        android:textColor="@android:color/darker_gray" />
-  </RelativeLayout>
-
-  <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_below="@id/topBar"
-      android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/tvLists"
+	<RelativeLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="15dp"
-        android:text="My Lists"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:padding="15dp">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+		<TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="Home Page"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#333333" />
+
+		<TextView
+            android:id="@+id/tvUserFullName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:text="User Name"
+            android:textSize="16sp"
+            android:textColor="@android:color/darker_gray" />
+	</RelativeLayout>
+
+	<LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical" />
-  </LinearLayout>
+        android:layout_below="@id/topBar"
+        android:orientation="vertical">
 
-  <com.google.android.material.floatingactionbutton.FloatingActionButton
-      android:id="@+id/fabAdd"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_alignParentBottom="true"
-      android:layout_alignParentRight="true"
-      android:layout_margin="20dp"
-      android:src="@android:drawable/ic_input_add"
-      app:backgroundTint="@android:color/holo_blue_dark"
-      app:tint="@android:color/white" />
+		<TextView
+            android:id="@+id/tvLists"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="10dp"
+            android:text="My Lists"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+		<androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="80dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical" />
+	</LinearLayout>
+
+	<com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="20dp"
+        android:src="@android:drawable/ic_menu_add"
+        app:backgroundTint="@android:color/holo_blue_dark"
+        app:tint="@android:color/white"
+        app:elevation="6dp"
+        app:pressedTranslationZ="12dp" />
 
 </RelativeLayout>

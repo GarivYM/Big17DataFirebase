@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.Gms.Extensions;
 using Android.OS;
 using Android.Util;
 using Android.Views;
@@ -14,6 +15,7 @@ using Firebase.Firestore;
 using Google.Android.Material.FloatingActionButton;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Big17DataFirebase2
 {
@@ -36,28 +38,21 @@ namespace Big17DataFirebase2
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-
-            // Set the layout - Ensure this matches your filename exactly
             SetContentView(Resource.Layout.homepagelayout);
-
             InitializeViews();
         }
 
         private void InitializeViews()
         {
-            // 1. Link Top Bar UI
             tvUserFullName = FindViewById<TextView>(Resource.Id.tvUserFullName);
             tvTitle = FindViewById<TextView>(Resource.Id.tvTitle);
             tvLists = FindViewById<TextView>(Resource.Id.tvLists);
 
-            // 2. Setup Floating Action Button
             fabAdd = FindViewById<FloatingActionButton>(Resource.Id.fabAdd);
             fabAdd.Click += (s, e) => {
-                // Instead of jumping to another activity, show your dialog!
                 TvAdd_Click(s, e);
             };
 
-            // 3. Setup RecyclerView
             recyclerView = FindViewById<RecyclerView>(Resource.Id.recyclerView);
             layoutManager = new LinearLayoutManager(this);
             recyclerView.SetLayoutManager(layoutManager);
@@ -70,7 +65,6 @@ namespace Big17DataFirebase2
 
         private void OnItemClick(object sender, int position)
         {
-            // Transfer to the specific list details
             var selectedList = lists[position];
             Intent intent = new Intent(this, typeof(ListActivity));
             intent.PutExtra("listId", selectedList.Id);
@@ -83,7 +77,6 @@ namespace Big17DataFirebase2
         {
             base.OnResume();
 
-            // Safety Check & User Name Display
             if (ProManager.CurrentUser != null)
             {
                 tvUserFullName.Text = $"{ProManager.CurrentUser.FirstName} {ProManager.CurrentUser.LastName}";
@@ -91,7 +84,6 @@ namespace Big17DataFirebase2
             }
             else
             {
-                // If session is lost, bounce back to login
                 StartActivity(typeof(SignInActivity));
                 Finish();
                 return;
@@ -106,46 +98,79 @@ namespace Big17DataFirebase2
             base.OnPause();
             FireBaseHelper.StopListsListener();
         }
+
         private void TvAdd_Click(object sender, EventArgs e)
         {
+            View dialogView = LayoutInflater.From(this).Inflate(Resource.Layout.dialog_add_join, null);
+            EditText etCreate = dialogView.FindViewById<EditText>(Resource.Id.etListName);
+            EditText etJoin = dialogView.FindViewById<EditText>(Resource.Id.etJoinCode);
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.SetTitle("Create New List");
+            builder.SetTitle("Add or Join List");
+            builder.SetView(dialogView);
 
-            EditText input = new EditText(this);
-            input.Hint = "Enter list name (e.g., Groceries)";
-            builder.SetView(input);
-
-            builder.SetPositiveButton("Create", async (s, args) =>
+            builder.SetPositiveButton("Confirm", async (s, args) =>
             {
-                string listName = input.Text.Trim();
+                string createName = etCreate.Text.Trim();
+                string joinCode = etJoin.Text.Trim().ToUpper();
 
-                if (!string.IsNullOrEmpty(listName))
+                if (!string.IsNullOrEmpty(createName))
                 {
                     ShowProgressBar(true);
-
-                    string currentUserId = FirebaseAuth.Instance.CurrentUser.Uid;
-
-                    // Call the helper
-                    bool success = await FireBaseHelper.CreateList(listName, currentUserId, "Standard");
-
+                    bool success = await FireBaseHelper.CreateList(createName, FirebaseAuth.Instance.CurrentUser.Uid, "Standard");
                     ShowProgressBar(false);
 
                     if (success)
                     {
-                        Toast.MakeText(this, $"List '{listName}' created!", ToastLength.Short).Show();
-                        // No need to manually refresh; your FetchListsListener will 
-                        // automatically see the new data and update the RecyclerView!
+                        // Force use of Android.Widget to solve the conversion error
+                        RunOnUiThread(() => Android.Widget.Toast.MakeText(this, "List Created!", Android.Widget.ToastLength.Short).Show());
                     }
-                    else
-                    {
-                        Toast.MakeText(this, "Failed to create list. Try again.", ToastLength.Long).Show();
-                    }
+                }
+                else if (!string.IsNullOrEmpty(joinCode))
+                {
+                    ShowProgressBar(true);
+                    await JoinListByCode(joinCode);
+                    ShowProgressBar(false);
+                }
+                else
+                {
+                    // Force use of Android.Widget here too
+                    Android.Widget.Toast.MakeText(this, "Please fill one of the options", Android.Widget.ToastLength.Short).Show();
                 }
             });
 
             builder.SetNegativeButton("Cancel", (s, args) => { });
             builder.Show();
         }
+
+        private async Task JoinListByCode(string code)
+        {
+            var firestore = FirebaseFirestore.Instance;
+            var currentUserId = FirebaseAuth.Instance.CurrentUser.Uid;
+
+            try
+            {
+                var result = await firestore.Collection("lists").WhereEqualTo("joinCode", code).Get();
+                var query = result as QuerySnapshot;
+
+                if (query == null || query.IsEmpty)
+                {
+                    RunOnUiThread(() => Toast.MakeText(this, "Invalid Code! No list found.", ToastLength.Long).Show());
+                    return;
+                }
+
+                var doc = query.Documents[0];
+                await firestore.Collection("lists").Document(doc.Id).Update("sharedWith", FieldValue.ArrayUnion(currentUserId));
+
+                RunOnUiThread(() => Toast.MakeText(this, "Successfully joined the list!", ToastLength.Short).Show());
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("HomeActivity", "Join Error: " + ex.Message);
+                RunOnUiThread(() => Toast.MakeText(this, "Error joining list.", ToastLength.Short).Show());
+            }
+        }
+
         private void FetchListsFromDB()
         {
             FireBaseHelper.FetchListsListener();
@@ -153,7 +178,6 @@ namespace Big17DataFirebase2
             FireBaseHelper.listener.getEvent += (error, args) =>
             {
                 ShowProgressBar(false);
-
                 if (lists == null) lists = new List<Big17DataFirebase2.Model.List>();
                 lists.Clear();
 
@@ -165,29 +189,24 @@ namespace Big17DataFirebase2
                     foreach (DocumentSnapshot item in snapshot.Documents)
                     {
                         string ownerId = item.Get("ownerId")?.ToString();
-
-                        // Handle potential null sharedWith arrays
                         var sharedWith = item.Get("sharedWith") as Java.Util.ArrayList;
                         bool isSharedWithMe = sharedWith != null && sharedWith.Contains(currentUserId);
 
-                        // Logic: Only show lists relevant to the user
                         if (ownerId == currentUserId || isSharedWithMe)
                         {
-                            var listObj = new Big17DataFirebase2.Model.List()
+                            lists.Add(new Big17DataFirebase2.Model.List()
                             {
                                 Id = item.Id,
                                 Title = item.Get("title")?.ToString() ?? "Untitled List",
                                 OwnerId = ownerId
-                            };
-                            lists.Add(listObj);
+                            });
                         }
                     }
-
                     listAdapter.NotifyDataSetChanged();
                 }
                 catch (Exception ex)
                 {
-                    Log.Debug("HomeActivity", "Error fetching lists: " + ex.Message);
+                    Log.Debug("HomeActivity", "Error fetching: " + ex.Message);
                 }
             };
         }
