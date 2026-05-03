@@ -15,10 +15,12 @@ namespace Big17DataFirebase2.Adapters
 {
     public class UsersRViewAdapter : RecyclerView.Adapter
     {
-
         Context context;
         List<User> users;
-        public event EventHandler<int> ItemClick;     
+
+        // Existing click for the row
+        public event EventHandler<int> ItemClick;
+        // NEW click for the delete button
 
         public UsersRViewAdapter(Context context, List<User> users)
         {
@@ -28,29 +30,43 @@ namespace Big17DataFirebase2.Adapters
 
         public override int ItemCount => users.Count;
 
-        void OnClick(int position)
-        {
-            if (ItemClick != null)
-                ItemClick(this, position);
-        }
-
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
             if (holder is UserViewHolder userViewHolder)
             {
-                userViewHolder.firstName.Text = users[position].FirstName;
-                userViewHolder.lastName.Text = users[position].LastName;
-                userViewHolder.ivAvatar.SetImageResource(users[position].ImageId);
+                var user = users[position];
+                userViewHolder.firstName.Text = user.FirstName;
+                userViewHolder.lastName.Text = user.LastName;
+                userViewHolder.ivAvatar.SetImageResource(user.ImageId);
+
+                
             }
         }
 
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
         {
-            LinearLayout layout = (LinearLayout)LayoutInflater.From(context)
-                .Inflate(Resource.Layout.usercard_layout, parent, false);
+            // Inflate your usercard_layout
+            View layout = LayoutInflater.From(context).Inflate(Resource.Layout.usercard_layout, parent, false);
+            return new UserViewHolder(layout, (pos) => ItemClick?.Invoke(this, pos));
+        }
 
-            UserViewHolder viewHolder = new UserViewHolder(layout, OnClick);
-            return viewHolder;
+        // UPDATED ViewHolder
+        public class UserViewHolder : RecyclerView.ViewHolder
+        {
+            public TextView firstName, lastName;
+            public ImageView ivAvatar;
+
+
+            public UserViewHolder(View itemView, Action<int> listener) : base(itemView)
+            {
+                firstName = itemView.FindViewById<TextView>(Resource.Id.tvFirstName);
+                lastName = itemView.FindViewById<TextView>(Resource.Id.tvLastName);
+                ivAvatar = itemView.FindViewById<ImageView>(Resource.Id.ivAvatar);
+                
+
+                // Row click listener
+                itemView.Click += (sender, e) => listener(LayoutPosition);
+            }
         }
     }
 }

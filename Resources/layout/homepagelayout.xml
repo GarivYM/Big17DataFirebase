@@ -1,62 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
 
-    <!-- Top bar -->
-    <LinearLayout
-        android:layout_width="match_parent"
+  <RelativeLayout
+      android:id="@+id/topBar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:padding="15dp">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_margin="15dp">
+        android:layout_alignParentLeft="true"
+        android:text="Home Page"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#333333" />
 
-        <!-- Join (left) -->
-        <TextView
-            android:id="@+id/tvJoin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Join"
-            android:textSize="18sp"
-            android:textColor="@android:color/holo_blue_dark" />
+    <TextView
+        android:id="@+id/tvUserFullName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:text="User Name"
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray" />
+  </RelativeLayout>
 
-        <!-- Title (center using weight) -->
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Home Page"
-            android:gravity="center"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_below="@id/topBar"
+      android:orientation="vertical">
 
-        <!-- Add (right) -->
-        <TextView
-            android:id="@+id/tvAdd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="+"
-            android:textSize="22sp"
-            android:textColor="@android:color/holo_green_dark" />
-
-    </LinearLayout>
-
-    <!-- Subtitle -->
     <TextView
         android:id="@+id/tvLists"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="15dp"
-        android:text="Users list..."
-        android:textSize="20sp" />
+        android:text="My Lists"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
-    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical" />
+  </LinearLayout>
 
-</LinearLayout>
+  <com.google.android.material.floatingactionbutton.FloatingActionButton
+      android:id="@+id/fabAdd"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentBottom="true"
+      android:layout_alignParentRight="true"
+      android:layout_margin="20dp"
+      android:src="@android:drawable/ic_input_add"
+      app:backgroundTint="@android:color/holo_blue_dark"
+      app:tint="@android:color/white" />
+
+</RelativeLayout>

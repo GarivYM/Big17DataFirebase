@@ -15,7 +15,7 @@ using System.Text;
 
 namespace Big17DataFirebase2
 {
-	[Activity(Label = "SignInActivity")]
+	[Activity(Label = "SignInActivity", MainLauncher = true)]
 	public class SignInActivity : AppCompatActivity, Android.Views.View.IOnClickListener
 	{
 		private EditText etEmail, etPass;
@@ -44,7 +44,7 @@ namespace Big17DataFirebase2
 			//Debug Mode
 			if (ProManager.DebugMode)
 			{
-				etEmail.Text = "yair@gmail.com";
+				etEmail.Text = "user@gmail.com";
 				etPass.Text = "123456";
 				ShowProgressBar(true);
 				SignInWithEmailAndPassword();
@@ -69,17 +69,20 @@ namespace Big17DataFirebase2
 
         private async void GetCurrentUserFromDB(string userAuthID)
         {
-			var userfromDB = await FireBaseHelper.GetUserById(userAuthID);
+            var userfromDB = await FireBaseHelper.GetUserById(userAuthID);
 
-			if (userfromDB != null)
-			{
-                //Get current user from Firestore DB
-                //Set Current User 
-                ShowProgressBar(false);
+            if (userfromDB != null)
+            {
                 ProManager.CurrentUser = userfromDB;
-				StartActivity(typeof(MainPage));
-			}
-			else
+                ShowProgressBar(false);
+
+                // Use an Intent to clear the stack
+                Intent intent = new Intent(this, typeof(HomeActivity));
+                intent.AddFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
+                StartActivity(intent);
+                Finish();
+            }
+            else
 			{
                 ShowProgressBar(false);
 				Log.Debug(ProManager.TAG, "SighIn: Failed get user from DB");

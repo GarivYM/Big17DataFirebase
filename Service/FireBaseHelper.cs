@@ -353,32 +353,80 @@ namespace Big17DataFirebase2.Service
         #region App Data
 
         #endregion
-        
+
         #region Lists
-        public static async Task<string> CreateList(string title, string ownerId, string type)
+        public static async Task<bool> CreateList(string title, string ownerId, string type)
         {
             try
             {
-                HashMap listMap = new HashMap();
-                listMap.Put("title", title);
-                listMap.Put("ownerId", ownerId);
-                listMap.Put("type", type);
-                listMap.Put("sharedWith", new Java.Util.ArrayList());
-                listMap.Put("createdAt", new Java.Util.Date());
+                var firestore = FirebaseFirestore.Instance;
+                string joinCode = Guid.NewGuid().ToString().Substring(0, 6).ToUpper();
 
-                DocumentReference listRef = FirebaseFirestore.Instance
-                    .Collection("lists")
-                    .Document(); // auto ID
+                // Use JavaDictionary to ensure compatibility with the Android SDK
+                var listData = new Android.Runtime.JavaDictionary<string, object>
+                {
+                    { "title", title },
+                    { "ownerId", ownerId },
+                    { "type", type },
+                    { "joinCode", joinCode },
+                    { "sharedWith", new Java.Util.ArrayList() }
+                };
 
-                await listRef.Set(listMap);
+                // Note: FieldValue.ServerTimestamp() works best when passed via a Java Map
+                listData.Add("createdAt", FieldValue.ServerTimestamp());
 
-                return listRef.Id;
+                // Now .Add() will accept listData because JavaDictionary implements the necessary Java interfaces
+                await firestore.Collection("lists").Add(listData);
+
+                return true;
             }
             catch (Exception ex)
             {
-                Log.Error(ProManager.TAG, "CreateList failed: " + ex.Message);
-                throw;
+                Log.Debug("FirebaseError", ex.Message);
+                return false;
             }
+        }
+        public static async Task<bool> JoinListByCode(string code, string userId)
+        {
+            try
+            {
+                var query = await FirebaseFirestore.Instance.Collection("lists")
+                            .WhereEqualTo("listCode", code).Get();
+
+                var documents = (QuerySnapshot)query;
+                if (documents.IsEmpty) return false;
+
+                var listDoc = documents.Documents[0];
+                // Use FieldValue.ArrayUnion to add the user without duplicates
+                await listDoc.Reference.Update("sharedWith", FieldValue.ArrayUnion(userId));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ProManager.TAG, "JoinListByCode failed: " + ex.Message);
+                return false;
+            }
+        }
+        public static async Task ToggleItemStatus(string listId, string itemId, bool isChecked)
+        {
+            await FirebaseFirestore.Instance
+                .Collection("lists").Document(listId)
+                .Collection("items").Document(itemId)
+                .Update("isChecked", isChecked);
+        }
+        public static void FetchMyLists(string userId)
+        {
+            listener = new FirestoreEventListener();
+            // This query finds lists where you are the owner OR a participant
+            Registration = FirebaseFirestore.Instance.Collection("lists")
+                .WhereEqualTo("ownerId", userId)
+                // Note: You might need a separate query or a Composite Index for 'sharedWith'
+                .AddSnapshotListener(listener);
+        }
+        public static async Task RemoveUserFromList(string listId, string userIdToRemove)
+        {
+            await FirebaseFirestore.Instance.Collection("lists").Document(listId)
+                .Update("sharedWith", FieldValue.ArrayRemove(userIdToRemove));
         }
         public static async Task AddItemToList(string listId, string text)
         {
