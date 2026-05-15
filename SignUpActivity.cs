@@ -59,7 +59,7 @@ namespace Big17DataFirebase2
 				UserEmail = _userEmail.Text,
 				UserPass = _userPassword.Text,
 				UserMobile = _userMobile.Text,
-                IsAdmin = _firstName.Text == "Yair" && _lastName.Text == "Mazor" && _userEmail.Text == "yair@gmail.com" && _userPassword.Text == "123456" && _userMobile.Text == "0506020411"
+                IsAdmin = (_userEmail.Text == "admin@gmail.com")
             };
 
 			RegisterNewUser();
@@ -76,8 +76,16 @@ namespace Big17DataFirebase2
                 Toast.MakeText(this, $"SignUp succeeded!", ToastLength.Short).Show();
 
                 //Set Current User
-                ProManager.CurrentUser = _user;        
-                StartActivity(typeof(MainPage));
+                ProManager.CurrentUser = _user;
+                if (_user.IsAdmin)
+                {
+                    StartActivity(typeof(AdminActivity));
+                }
+                else
+                {
+                    StartActivity(typeof(HomeActivity));
+                }
+                Finish(); // Close the signup page so they can't go back to it
             }
             catch (Exception ex)
             {

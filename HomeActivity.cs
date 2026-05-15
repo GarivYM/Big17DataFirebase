@@ -5,6 +5,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.App; // Necessary for AppCompatActivity
 using AndroidX.RecyclerView.Widget;
 using Big17DataFirebase2.Adapters;
 using Big17DataFirebase2.BusinessLogic;
@@ -15,12 +16,14 @@ using Firebase.Firestore;
 using Google.Android.Material.FloatingActionButton;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Big17DataFirebase2
 {
-    [Activity(Label = "HomeActivity", MainLauncher = false)]
-    public class HomeActivity : Activity
+    [Activity(Label = "Home Page", MainLauncher = false)]
+    // Changed inheritance to AppCompatActivity to support Fragments
+    public class HomeActivity : AppCompatActivity
     {
         // RecyclerView Components
         RecyclerView recyclerView;
@@ -28,7 +31,7 @@ namespace Big17DataFirebase2
         ListsRViewAdapter listAdapter;
 
         // UI Elements
-        TextView tvUserFullName, tvTitle, tvLists;
+        TextView tvUserFullName, tvTitle;
         FloatingActionButton fabAdd;
 
         // Data
@@ -46,12 +49,9 @@ namespace Big17DataFirebase2
         {
             tvUserFullName = FindViewById<TextView>(Resource.Id.tvUserFullName);
             tvTitle = FindViewById<TextView>(Resource.Id.tvTitle);
-            tvLists = FindViewById<TextView>(Resource.Id.tvLists);
 
             fabAdd = FindViewById<FloatingActionButton>(Resource.Id.fabAdd);
-            fabAdd.Click += (s, e) => {
-                TvAdd_Click(s, e);
-            };
+            fabAdd.Click += TvAdd_Click;
 
             recyclerView = FindViewById<RecyclerView>(Resource.Id.recyclerView);
             layoutManager = new LinearLayoutManager(this);
@@ -73,154 +73,151 @@ namespace Big17DataFirebase2
             StartActivity(intent);
         }
 
-        protected override void OnResume()
+        protected override async void OnResume()
         {
             base.OnResume();
 
-            if (ProManager.CurrentUser != null)
+            // Check Login Status
+            if (FirebaseAuth.Instance.CurrentUser != null && ProManager.CurrentUser != null)
             {
                 tvUserFullName.Text = $"{ProManager.CurrentUser.FirstName} {ProManager.CurrentUser.LastName}";
-                tvTitle.Text = "Home Page";
+                tvTitle.Text = "My Lists";
+
+                // Fetch data using the new Bridge logic
+                await LoadUserLists();
             }
             else
             {
                 StartActivity(typeof(SignInActivity));
                 Finish();
-                return;
             }
-
-            ShowProgressBar(true);
-            FetchListsFromDB();
         }
 
-        protected override void OnPause()
-        {
-            base.OnPause();
-            FireBaseHelper.StopListsListener();
-        }
-
+        // Logic to open your new Fragment
         private void TvAdd_Click(object sender, EventArgs e)
         {
-            View dialogView = LayoutInflater.From(this).Inflate(Resource.Layout.dialog_add_join, null);
-            EditText etCreate = dialogView.FindViewById<EditText>(Resource.Id.etListName);
-            EditText etJoin = dialogView.FindViewById<EditText>(Resource.Id.etJoinCode);
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.SetTitle("Add or Join List");
-            builder.SetView(dialogView);
-
-            builder.SetPositiveButton("Confirm", async (s, args) =>
-            {
-                string createName = etCreate.Text.Trim();
-                string joinCode = etJoin.Text.Trim().ToUpper();
-
-                if (!string.IsNullOrEmpty(createName))
-                {
-                    ShowProgressBar(true);
-                    bool success = await FireBaseHelper.CreateList(createName, FirebaseAuth.Instance.CurrentUser.Uid, "Standard");
-                    ShowProgressBar(false);
-
-                    if (success)
-                    {
-                        // Force use of Android.Widget to solve the conversion error
-                        RunOnUiThread(() => Android.Widget.Toast.MakeText(this, "List Created!", Android.Widget.ToastLength.Short).Show());
-                    }
-                }
-                else if (!string.IsNullOrEmpty(joinCode))
-                {
-                    ShowProgressBar(true);
-                    await JoinListByCode(joinCode);
-                    ShowProgressBar(false);
-                }
-                else
-                {
-                    // Force use of Android.Widget here too
-                    Android.Widget.Toast.MakeText(this, "Please fill one of the options", Android.Widget.ToastLength.Short).Show();
-                }
-            });
-
-            builder.SetNegativeButton("Cancel", (s, args) => { });
-            builder.Show();
+            var frag = new AddJoinFragment();
+            frag.Show(SupportFragmentManager, "AddJoinTag");
         }
 
-        private async Task JoinListByCode(string code)
+        // The "Bridge" Logic: UserID -> UserList -> joinCode -> lists
+        public async Task LoadUserLists()
+        {
+            var firestore = FirebaseFirestore.Instance;
+            var currentUserId = FirebaseAuth.Instance.CurrentUser?.Uid;
+            if (currentUserId == null) return;
+
+            try
+            {
+                ShowProgressBar(true);
+
+                // 1. Find all list codes I have access to
+                var mappingResult = await firestore.Collection("UserList")
+                                                   .WhereEqualTo("UserID", currentUserId)
+                                                   .Get();
+
+                var mappingQuery = mappingResult as QuerySnapshot;
+
+                if (mappingQuery == null || mappingQuery.IsEmpty)
+                {
+                    RunOnUiThread(() => {
+                        lists.Clear();
+                        listAdapter.NotifyDataSetChanged();
+                        ShowProgressBar(false);
+                    });
+                    return;
+                }
+
+                // 2. Extract codes into a list
+                List<string> myCodes = mappingQuery.Documents
+                    .Select(d => d.Get("joinCode")?.ToString())
+                    .Where(c => !string.IsNullOrEmpty(c))
+                    .ToList();
+
+                // 3. Fetch the actual list details from 'lists' collection
+                // Note: WhereIn is limited to 10 items per query
+                var listDataResult = await firestore.Collection("lists")
+                    .WhereIn(FieldPath.Of("joinCode"), myCodes.Select(x => (Java.Lang.Object)x).ToList())
+                    .Get();
+
+                var listsQuery = listDataResult as QuerySnapshot;
+
+                // 4. Update the UI List
+                RunOnUiThread(() => {
+                    lists.Clear();
+                    if (listsQuery != null)
+                    {
+                        foreach (var doc in listsQuery.Documents)
+                        {
+                            lists.Add(new Big17DataFirebase2.Model.List()
+                            {
+                                Id = doc.Id,
+                                Title = doc.Get("Title")?.ToString() ?? "Untitled List",
+                                OwnerId = doc.Get("ownerId")?.ToString()
+                            });
+                        }
+                    }
+                    listAdapter.NotifyDataSetChanged();
+                    ShowProgressBar(false);
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("HomeActivity", "LoadError: " + ex.Message);
+                ShowProgressBar(false);
+            }
+        }
+
+        public async Task JoinListByCode(string code)
         {
             var firestore = FirebaseFirestore.Instance;
             var currentUserId = FirebaseAuth.Instance.CurrentUser.Uid;
 
             try
             {
+                ShowProgressBar(true);
+
+                // Check if list exists
                 var result = await firestore.Collection("lists").WhereEqualTo("joinCode", code).Get();
                 var query = result as QuerySnapshot;
 
                 if (query == null || query.IsEmpty)
                 {
-                    RunOnUiThread(() => Toast.MakeText(this, "Invalid Code! No list found.", ToastLength.Long).Show());
+                    ShowProgressBar(false);
+                    RunOnUiThread(() => Toast.MakeText(this, "Invalid Code!", ToastLength.Long).Show());
                     return;
                 }
 
-                var doc = query.Documents[0];
-                await firestore.Collection("lists").Document(doc.Id).Update("sharedWith", FieldValue.ArrayUnion(currentUserId));
+                // Create the bridge document
+                var mapping = new Java.Util.HashMap();
+                mapping.Put("UserID", currentUserId);
+                mapping.Put("joinCode", code);
 
-                RunOnUiThread(() => Toast.MakeText(this, "Successfully joined the list!", ToastLength.Short).Show());
+                await firestore.Collection("UserList").Add(mapping);
+
+                // Refresh data
+                await LoadUserLists();
             }
             catch (Exception ex)
             {
-                Log.Debug("HomeActivity", "Join Error: " + ex.Message);
-                RunOnUiThread(() => Toast.MakeText(this, "Error joining list.", ToastLength.Short).Show());
-            }
-        }
-
-        private void FetchListsFromDB()
-        {
-            FireBaseHelper.FetchListsListener();
-
-            FireBaseHelper.listener.getEvent += (error, args) =>
-            {
                 ShowProgressBar(false);
-                if (lists == null) lists = new List<Big17DataFirebase2.Model.List>();
-                lists.Clear();
-
-                try
-                {
-                    var snapshot = (QuerySnapshot)args.Result;
-                    string currentUserId = FirebaseAuth.Instance.CurrentUser.Uid;
-
-                    foreach (DocumentSnapshot item in snapshot.Documents)
-                    {
-                        string ownerId = item.Get("ownerId")?.ToString();
-                        var sharedWith = item.Get("sharedWith") as Java.Util.ArrayList;
-                        bool isSharedWithMe = sharedWith != null && sharedWith.Contains(currentUserId);
-
-                        if (ownerId == currentUserId || isSharedWithMe)
-                        {
-                            lists.Add(new Big17DataFirebase2.Model.List()
-                            {
-                                Id = item.Id,
-                                Title = item.Get("title")?.ToString() ?? "Untitled List",
-                                OwnerId = ownerId
-                            });
-                        }
-                    }
-                    listAdapter.NotifyDataSetChanged();
-                }
-                catch (Exception ex)
-                {
-                    Log.Debug("HomeActivity", "Error fetching: " + ex.Message);
-                }
-            };
+                Log.Debug("HomeActivity", "JoinError: " + ex.Message);
+            }
         }
 
         private void ShowProgressBar(bool show)
         {
             if (show)
             {
-                mProgressDialog = new Dialog(this, Android.Resource.Style.ThemeNoTitleBar);
-                View view = LayoutInflater.From(this).Inflate(Resource.Layout.fb_progressbar, null);
-                mProgressDialog.Window.SetBackgroundDrawableResource(Android.Resource.Color.Transparent);
-                mProgressDialog.SetContentView(view);
-                mProgressDialog.SetCancelable(false);
-                mProgressDialog.Show();
+                if (mProgressDialog == null)
+                {
+                    mProgressDialog = new Dialog(this, Android.Resource.Style.ThemeNoTitleBar);
+                    View view = LayoutInflater.From(this).Inflate(Resource.Layout.fb_progressbar, null);
+                    mProgressDialog.Window.SetBackgroundDrawableResource(Android.Resource.Color.Transparent);
+                    mProgressDialog.SetContentView(view);
+                    mProgressDialog.SetCancelable(false);
+                }
+                if (!mProgressDialog.IsShowing) mProgressDialog.Show();
             }
             else
             {

@@ -67,7 +67,7 @@
     <Compile Include="Adapters\ListsRViewAdapter.cs" />
     <Compile Include="Adapters\UsersRViewAdapter.cs" />
     <Compile Include="Adapters\UserViewHolder.cs" />
-    <Compile Include="AddJoinActivity.cs" />
+    <Compile Include="AddJoinFragment.cs" />
     <Compile Include="AdminActivity.cs" />
     <Compile Include="BusinessLogic\ProManager.cs" />
     <Compile Include="HomeActivity.cs" />
@@ -78,6 +78,7 @@
     <Compile Include="Model\List.cs" />
     <Compile Include="Model\ListItem.cs" />
     <Compile Include="Model\User.cs" />
+    <Compile Include="Model\UserListMapping.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service\FireBaseHelper.cs" />

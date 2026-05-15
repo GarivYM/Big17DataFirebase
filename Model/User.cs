@@ -20,6 +20,6 @@ namespace Big17DataFirebase2.Model
 		public string UserPass { get; set; }
 		public string UserMobile { get; set; }
         public int ImageId { get; set; }
-        public bool IsAdmin { get; set; } = false;
+        public bool IsAdmin { get; set; } 
 	}
 }

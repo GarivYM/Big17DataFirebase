@@ -20,7 +20,6 @@ namespace Big17DataFirebase2.Model
 
         // Add these to match your flowchart logic:
         public string ListCode { get; set; } // The 6-digit code for "Join List"
-        public List<string> SharedWith { get; set; } = new List<string>(); // IDs of users who joined
-        public string Type { get; set; } // e.g., "Standard" or "Checklist"
+        
     }
 }

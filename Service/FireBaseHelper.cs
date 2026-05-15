@@ -174,7 +174,7 @@ namespace Big17DataFirebase2.Service
                 //Insert user to FireStore database
                 HashMap userMap = new HashMap(); //using Java.Util;
                 userMap.Put("FirstName", user.FirstName);
-                userMap.Put("IsAdmin", user.IsAdmin);
+                userMap.Put("IsAdmin", user.UserEmail == "admin@gmail.com");
                 userMap.Put("LastName", user.LastName);
                 userMap.Put("UserEmail", user.UserEmail);
                 userMap.Put("UserMobile", user.UserMobile);
@@ -362,72 +362,37 @@ namespace Big17DataFirebase2.Service
                 var firestore = FirebaseFirestore.Instance;
                 string joinCode = Guid.NewGuid().ToString().Substring(0, 6).ToUpper();
 
-                // Use JavaDictionary to ensure compatibility with the Android SDK
+                // 1. Create the List document
                 var listData = new Android.Runtime.JavaDictionary<string, object>
-                {
-                    { "title", title },
-                    { "ownerId", ownerId },
-                    { "type", type },
-                    { "joinCode", joinCode },
-                    { "sharedWith", new Java.Util.ArrayList() }
-                };
-
-                // Note: FieldValue.ServerTimestamp() works best when passed via a Java Map
+        {
+            { "Title", title }, // Make sure this matches your 'Title' vs 'title' change!
+            { "ownerId", ownerId },
+            { "type", type },
+            { "joinCode", joinCode }
+        };
                 listData.Add("createdAt", FieldValue.ServerTimestamp());
 
-                // Now .Add() will accept listData because JavaDictionary implements the necessary Java interfaces
                 await firestore.Collection("lists").Add(listData);
+
+                // 2. NEW: Create the Bridge document in 'UserList'
+                // Without this, LoadUserLists() will never find the list you just created!
+                var mappingData = new Android.Runtime.JavaDictionary<string, object>
+        {
+            { "UserID", ownerId },
+            { "joinCode", joinCode }
+        };
+
+                await firestore.Collection("UserList").Add(mappingData);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Log.Debug("FirebaseError", ex.Message);
+                Log.Debug("FirebaseError", "Crash in CreateList: " + ex.Message);
                 return false;
             }
         }
-        private async Task JoinListByCode(string code)
-        {
-            var firestore = FirebaseFirestore.Instance;
-            var currentUserId = FirebaseAuth.Instance.CurrentUser.Uid;
 
-            try
-            {
-                var result = await firestore.Collection("lists")
-                                            .WhereEqualTo("joinCode", code)
-                                            .Get();
-
-                var query = result as QuerySnapshot;
-
-                if (query == null || query.IsEmpty)
-                {
-                    new Android.OS.Handler(Android.OS.Looper.MainLooper).Post(() => {
-                        // Explicitly calling Android.Widget.Toast to avoid conversion errors
-                        Android.Widget.Toast.MakeText(Android.App.Application.Context, "Invalid Code! No list found.", Android.Widget.ToastLength.Short).Show();
-                    });
-                    return;
-                }
-
-                var doc = query.Documents[0];
-                string listDocId = doc.Id;
-
-                await firestore.Collection("lists")
-                               .Document(listDocId)
-                               .Update("sharedWith", FieldValue.ArrayUnion(currentUserId));
-
-                new Android.OS.Handler(Android.OS.Looper.MainLooper).Post(() => {
-                    Android.Widget.Toast.MakeText(Android.App.Application.Context, "Successfully joined!", Android.Widget.ToastLength.Short).Show();
-                });
-            }
-            catch (Exception ex)
-            {
-                Log.Debug("JoinError", ex.Message);
-
-                new Android.OS.Handler(Android.OS.Looper.MainLooper).Post(() => {
-                    Android.Widget.Toast.MakeText(Android.App.Application.Context, "Error: Could not join list.", Android.Widget.ToastLength.Short).Show();
-                });
-            }
-        }
         public static async Task ToggleItemStatus(string listId, string itemId, bool isChecked)
         {
             await FirebaseFirestore.Instance
@@ -435,40 +400,33 @@ namespace Big17DataFirebase2.Service
                 .Collection("items").Document(itemId)
                 .Update("isChecked", isChecked);
         }
-        public static void FetchMyLists(string userId)
+        public static async Task RemoveUserFromList(string joinCode, string userIdToRemove)
         {
-            listener = new FirestoreEventListener();
-            // This query finds lists where you are the owner OR a participant
-            Registration = FirebaseFirestore.Instance.Collection("lists")
-                .WhereEqualTo("ownerId", userId)
-                // Note: You might need a separate query or a Composite Index for 'sharedWith'
-                .AddSnapshotListener(listener);
-        }
-        public static async Task RemoveUserFromList(string listId, string userIdToRemove)
-        {
-            await FirebaseFirestore.Instance.Collection("lists").Document(listId)
-                .Update("sharedWith", FieldValue.ArrayRemove(userIdToRemove));
+            var firestore = FirebaseFirestore.Instance;
+
+            // Find the bridge document where UserID and joinCode match
+            var snapshot = await firestore.Collection("UserList")
+                .WhereEqualTo("UserID", userIdToRemove)
+                .WhereEqualTo("joinCode", joinCode)
+                .Get();
+
+            var query = snapshot as QuerySnapshot;
+            foreach (var doc in query.Documents)
+            {
+                await doc.Reference.Delete(); // Deletes the connection
+            }
         }
         public static async Task AddItemToList(string listId, string text)
         {
-            try
-            {
-                HashMap itemMap = new HashMap();
-                itemMap.Put("text", text);
+            HashMap itemMap = new HashMap();
+            itemMap.Put("text", text);
+            itemMap.Put("isChecked", false); // Add this so ToggleItemStatus doesn't crash later
 
-                DocumentReference itemRef = FirebaseFirestore.Instance
-                    .Collection("lists")
-                    .Document(listId)
-                    .Collection("items")
-                    .Document(); // auto ID
-
-                await itemRef.Set(itemMap);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ProManager.TAG, "AddItemToList failed: " + ex.Message);
-                throw;
-            }
+            await FirebaseFirestore.Instance
+                .Collection("lists")
+                .Document(listId)
+                .Collection("items")
+                .Add(itemMap);
         }
         public static async Task<List<string>> GetItems(string listId)
         {
