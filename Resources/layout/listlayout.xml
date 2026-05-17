@@ -30,10 +30,10 @@
             android:textStyle="bold" />
 
 		<TextView
-            android:id="@+id/tvBar"
+            android:id="@+id/tvAdd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="BAR"
+            android:text="Add Item"
             android:textSize="18sp"
             android:layout_marginRight="10dp"
             android:textColor="@android:color/holo_blue_dark" />

@@ -18,7 +18,7 @@ using System.Text;
 
 namespace Big17DataFirebase2
 {
-    [Activity(Label = "MainPage")]
+    [Activity(Label = "MainPage", MainLauncher = false)]
     public class MainPage : Activity
     {
         RecyclerView usersRecyclerView;
@@ -55,7 +55,7 @@ namespace Big17DataFirebase2
 
         void OnItemClick(object sender, int position)
         { 
-            Intent intent = new Intent(this, typeof(AccountActivity));
+            Intent intent = new Intent(this, typeof(SignInActivity));
             intent.PutExtra("userID", users[position].Id);
             StartActivity(intent);
 

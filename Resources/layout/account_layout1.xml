@@ -1,91 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-android:orientation="vertical"
-android:layout_width="match_parent"
-android:layout_height="match_parent">
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
 
-	<com.google.android.material.textfield.TextInputLayout
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:layout_marginTop="25dp"
-		android:layout_marginRight="20dp"
-		android:gravity="right"
-		android:id="@+id/account_delete_image">
-		<ImageButton
-			android:layout_width="30dp"
-			android:layout_height="35dp"
-			android:background="@drawable/delete"
-			android:visibility="invisible"
-			android:id="@+id/ibAccountDelete"/>
-	</com.google.android.material.textfield.TextInputLayout>
-	<com.google.android.material.textfield.TextInputLayout
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:layout_marginTop="50dp"
-		android:gravity="center_horizontal"
-		android:id="@+id/account_input_first_name">
-		<EditText
-			android:layout_width="230dp"
-			android:layout_height="wrap_content"
-			android:inputType="text"
-			android:id="@+id/et_account_first_name"
-			android:maxLines="1"
-			android:hint="First Name"/>
-	</com.google.android.material.textfield.TextInputLayout>
-	<com.google.android.material.textfield.TextInputLayout
-		android:layout_below="@+id/account_input_first_name"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center_horizontal"
-		android:id="@+id/account_input_last_name">
-		<EditText
-			android:layout_width="230dp"
-			android:layout_height="wrap_content"
-			android:inputType="text"
-			android:id="@+id/et_account_last_name"
-			android:maxLines="1"
-			android:hint="Last Name"/>
-	</com.google.android.material.textfield.TextInputLayout>
-	<com.google.android.material.textfield.TextInputLayout
-		android:layout_below="@+id/account_input_last_name"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center_horizontal"
-		android:id="@+id/account_input_email">
-		<EditText
-			android:layout_width="230dp"
-			android:layout_height="wrap_content"
-			android:inputType="textEmailAddress"
-			android:enabled="false"
-			android:id="@+id/et_account_email"
-			android:maxLines="1"
-			android:hint="Email"/>
-	</com.google.android.material.textfield.TextInputLayout>
-	<com.google.android.material.textfield.TextInputLayout
-		android:layout_below="@+id/account_input_email"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center_horizontal"
-		android:id="@+id/account_input_mobile">
-		<EditText
-			android:layout_width="230dp"
-			android:layout_height="wrap_content"
-			android:inputType="number"
-			android:id="@+id/et_account_mobile"
-			android:maxLines="1"
-			android:hint="Mobile"/>
-	</com.google.android.material.textfield.TextInputLayout>
-	<Button
-		android:layout_below="@+id/account_input_mobile"
-		android:layout_marginTop="20dp"
-		android:layout_marginLeft="80dp"
-		android:layout_marginRight="80dp"
-		android:layout_width="230dp"
-		android:layout_height="50dp"
-		android:textSize="15dp"
-		android:background="#3495eb"
-		android:text="Update"
-		android:id="@+id/btn_account_update"/>
+  <LinearLayout
+      android:orientation="vertical"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:padding="16dp">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+      <ImageButton
+          android:id="@+id/ibAccountDelete"
+          android:layout_width="40dp"
+          android:layout_height="40dp"
+          android:layout_alignParentRight="true"
+          android:background="@android:color/transparent"
+          android:src="@android:drawable/ic_menu_delete"
+          android:visibility="invisible"/>
+    </RelativeLayout>
 
-</RelativeLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+      <EditText
+          android:id="@+id/et_account_first_name"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:hint="First Name"
+          android:maxLines="1"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+      <EditText
+          android:id="@+id/et_account_last_name"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:hint="Last Name"
+          android:maxLines="1"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+      <EditText
+          android:id="@+id/et_account_email"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:hint="Email"
+          android:enabled="false"
+          android:maxLines="1"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+      <EditText
+          android:id="@+id/et_account_mobile"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:hint="Mobile"
+          android:inputType="number"
+          android:maxLines="1"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/btn_account_update"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:backgroundTint="#3495eb"
+        android:textColor="@android:color/white"
+        android:text="Update Profile"/>
+
+    <TextView
+        android:id="@+id/tvAdminListsTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="User's Connected Lists"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="#333333"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvAdminUserLists"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:nestedScrollingEnabled="false"/>
+
+  </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -62,13 +62,14 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AccountActivity.cs" />
+    <Compile Include="AccountFragment.cs" />
     <Compile Include="Adapters\ItemsRViewAdapter.cs" />
     <Compile Include="Adapters\ListsRViewAdapter.cs" />
     <Compile Include="Adapters\UsersRViewAdapter.cs" />
     <Compile Include="Adapters\UserViewHolder.cs" />
     <Compile Include="AddJoinFragment.cs" />
     <Compile Include="AdminActivity.cs" />
+    <Compile Include="Adapters\AdminListsAdapter.cs" />
     <Compile Include="BusinessLogic\ProManager.cs" />
     <Compile Include="HomeActivity.cs" />
     <Compile Include="ListActivity.cs" />
@@ -227,6 +228,11 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\dialog_list_info.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\admin_list_item.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>

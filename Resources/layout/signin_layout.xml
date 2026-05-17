@@ -50,45 +50,9 @@
         android:id="@+id/btn_login2"
     />
   </LinearLayout>
+  
   <TextView
       android:layout_below="@+id/login_input_btn"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:id="@+id/btn_forget_password"
-      android:text="Forget Password"
-      android:layout_centerHorizontal="true"
-      android:clickable="true"
-      android:textStyle="bold"
-      style="@style/Base.Widget.AppCompat.Button.Borderless"
-    />
-  <LinearLayout
-      android:layout_below="@+id/btn_forget_password"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="horizontal"
-      android:gravity="center"
-      android:id="@+id/layout_or">
-    <View
-        android:layout_width="150dp"
-        android:layout_height="1dp"
-        android:background="#c4c8c9"
-        android:layout_margin="5dp"
-    />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="OR"
-        android:padding="5dp"
-    />
-    <View
-        android:layout_width="150dp"
-        android:layout_height="1dp"
-        android:background="#c4c8c9"
-        android:layout_margin="5dp"
-    />
-  </LinearLayout>
-  <TextView
-      android:layout_below="@+id/layout_or"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:id="@+id/btn_sign_up"
@@ -96,6 +60,6 @@
       android:layout_centerHorizontal="true"
       android:clickable="true"
       android:textStyle="bold"
-      style="@style/Base.Widget.AppCompat.Button.Borderless"
+      
     />
 </RelativeLayout>

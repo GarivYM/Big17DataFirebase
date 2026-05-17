@@ -5,70 +5,77 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-	<RelativeLayout
-        android:id="@+id/topBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="15dp">
+  <RelativeLayout
+      android:id="@+id/topBar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:padding="15dp"
+      android:gravity="center_vertical">
 
-		<TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:text="Home Page"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#333333" />
+    <ImageButton
+        android:id="@+id/btnAccount"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:src="@android:drawable/ic_menu_myplaces"
+        android:background="?android:attr/selectableItemBackground"
+        android:tint="#333333"
+        android:contentDescription="Account Settings" />
 
-		<TextView
-            android:id="@+id/tvUserFullName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:text="User Name"
-            android:textSize="16sp"
-            android:textColor="@android:color/darker_gray" />
-	</RelativeLayout>
-
-	<LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/topBar"
-        android:orientation="vertical">
-
-		<TextView
-            android:id="@+id/tvLists"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="10dp"
-            android:text="My Lists"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-		<androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingBottom="80dp"
-            android:clipToPadding="false"
-            android:scrollbars="vertical" />
-	</LinearLayout>
-
-	<com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAdd"
+    <TextView
+        android:id="@+id/tvUserFullName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@id/btnAccount"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="12dp"
+        android:text="User Name"
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/tvLeave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_margin="20dp"
-        android:src="@android:drawable/ic_menu_add"
-        app:backgroundTint="@android:color/holo_blue_dark"
-        app:tint="@android:color/white"
-        app:elevation="6dp"
-        app:pressedTranslationZ="12dp" />
+        android:layout_centerVertical="true"
+        android:padding="8dp"
+        android:text="Leave"
+        android:textColor="#FF0000"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground" />
+  </RelativeLayout>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_below="@id/topBar"
+      android:orientation="vertical">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="80dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
+  </LinearLayout>
+
+  <com.google.android.material.floatingactionbutton.FloatingActionButton
+      android:id="@+id/fabAdd"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentBottom="true"
+      android:layout_alignParentRight="true"
+      android:layout_margin="20dp"
+      android:src="@android:drawable/ic_menu_add"
+      app:backgroundTint="@android:color/holo_blue_dark"
+      app:tint="@android:color/white"
+      app:elevation="6dp"
+      app:pressedTranslationZ="12dp" />
 
 </RelativeLayout>

@@ -1,15 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="16dp"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    app:cardMaxElevation="10dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
 
-	<TextView
-        android:id="@+id/tvListTitle"
-        android:text="List Title"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-</LinearLayout>
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:gravity="center_vertical"
+      android:padding="18dp"
+      android:background="#FFFFFF">
+
+    <TextView
+    android:id="@+id/ivListIcon"
+    android:layout_width="32dp"
+    android:layout_height="32dp"
+    android:text="&gt;"
+    android:rotation="180"
+    android:textSize="22sp"
+    android:textStyle="bold"
+    android:textColor="#6200EE"
+    android:gravity="center"
+    android:contentDescription="Enter List" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="16dp">
+
+      <TextView
+          android:id="@+id/tvListTitle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="My Awesome List"
+          android:textColor="#212121"
+          android:textSize="18sp"
+          android:textStyle="bold"
+          android:gravity="right" />
+
+      <TextView
+          android:id="@+id/tvListSubtitle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="לחץ לצפייה במוצרים"
+          android:textColor="#757575"
+          android:textSize="13sp"
+          android:layout_marginTop="2dp"
+          android:gravity="right" />
+    </LinearLayout>
+
+  </LinearLayout>
+</androidx.cardview.widget.CardView>
