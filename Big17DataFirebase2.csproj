@@ -77,7 +77,6 @@
     <Compile Include="MainPage.cs" />
     <Compile Include="Model\Item.cs" />
     <Compile Include="Model\List.cs" />
-    <Compile Include="Model\ListItem.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="Model\UserListMapping.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
