@@ -21,7 +21,7 @@ namespace Big17DataFirebase2
     // הגדרת המחלקה כפעילות מסוג AppCompatActivity. 
     // המאפיין MainLauncher = true קובע שזהו המסך הראשון שייפתח כשהאפליקציה עולה בטלפון.
     // המחלקה מיישמת את הממשק IOnClickListener כדי לטפל בלחיצות על כפתורים בצורה מרכזית.
-    [Activity(Label = "SignInActivity", MainLauncher = true)]
+    [Activity(Label = "SmartList", Icon = "@drawable/smart_list_icon", MainLauncher = true)]
     public class SignInActivity : AppCompatActivity, Android.Views.View.IOnClickListener
     {
         // הגדרת משתני רכיבי הקלט (תיבות הטקסט לאימייל וסיסמה)

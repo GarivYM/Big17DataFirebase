@@ -120,6 +120,19 @@ namespace Big17DataFirebase2
                 }
             };
 
+            // =========================================================================
+            // פעיל: מאזין ללחיצה על פריט ברשימה ומציג את דיאלוג השינוי/עריכה
+            // =========================================================================
+            adapter.ItemClick += (sender, position) =>
+            {
+                if (position >= 0 && position < items.Count)
+                {
+                    // שליפת הפריט שנלחץ מהרשימה והעברתו לפונקציית הדיאלוג
+                    ShowChangeItemDialog(items[position]);
+                }
+            };
+            // =========================================================================
+
             // חיבור האדאפטר המוכן ל-RecyclerView
             recyclerView.SetAdapter(adapter);
         }
@@ -336,6 +349,45 @@ namespace Big17DataFirebase2
             ShowAddItemDialog();
         }
 
+        // מתוקן: דיאלוג לעריכה ושינוי שם של פריט קיים ברשימה
+        private void ShowChangeItemDialog(Item itemToChange)
+        {
+            if (itemToChange == null) return;
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.SetTitle("Change Item");
+
+            EditText input = new EditText(this);
+            input.Text = itemToChange.Name; // מציג את השם הנוכחי כברירת מחדל בשדה
+            builder.SetView(input);
+
+            builder.SetPositiveButton("Apply", async (s, args) =>
+            {
+                string newItemName = input.Text;
+                if (!string.IsNullOrEmpty(newItemName))
+                {
+                    try
+                    {
+                        // שימוש ב-Update על מסמך ספציפי לפי ה-Id שלו במקום Add
+                        await FirebaseFirestore.Instance
+                            .Collection("lists")
+                            .Document(currentListId)
+                            .Collection("items")
+                            .Document(itemToChange.Id)
+                            .Update("name", newItemName);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("ListActivity", "Error updating item name: " + ex.Message);
+                        Toast.MakeText(this, "Failed to update item", ToastLength.Short).Show();
+                    }
+                }
+            });
+
+            builder.SetNegativeButton("Cancel", (s, args) => { });
+            builder.Show();
+        }
+
         // מציגה דיאלוג עם שדה טקסט להוספת פריט חדש לרשימה ב-Firestore
         private void ShowAddItemDialog()
         {
@@ -390,6 +442,19 @@ namespace Big17DataFirebase2
                 LinearLayout container = dialogView.FindViewById<LinearLayout>(Resource.Id.participantsContainer);
 
                 tvJoinCode.Text = joinCode;
+
+                // =========================================================================
+                // חדש: הוספת מנגנון העתקה בלחיצה אחת על קוד ההצטרפות בתוך הדיאלוג
+                // =========================================================================
+                tvJoinCode.Click += (sender, e) =>
+                {
+                    var clipboard = (ClipboardManager)tvJoinCode.Context.GetSystemService(Context.ClipboardService);
+                    ClipData clip = ClipData.NewPlainText("JoinCode", tvJoinCode.Text);
+                    clipboard.PrimaryClip = clip;
+                    Toast.MakeText(tvJoinCode.Context, "קוד ההצטרפות הועתק ללוח!", ToastLength.Short).Show();
+                };
+                // =========================================================================
+
                 container.RemoveAllViews();
 
                 var userListResult = await firestore.Collection("UserList")

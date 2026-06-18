@@ -18,7 +18,7 @@ namespace Big17DataFirebase2
     {
         // הגדרת רכיבי ממשק המשתמש (UI) המופיעים בתוך התפריט התחתון
         private EditText etListName, etJoinCode; // שדות טקסט להקלדת שם רשימה או קוד הצטרפות
-        private Spinner spinnerType;             // תיבת בחירה נפתחת (דרופדאון) לבחירת סוג הרשימה
+  
         private Button btnCreate, btnJoin;       // כפתורי פעולה ליצירה או הצטרפות
 
         // פונקציית מחזור החיים האחראית על טעינת ה-Layout הויזואלי וקישור הרכיבים שלו
@@ -33,10 +33,10 @@ namespace Big17DataFirebase2
 
             // === 2. אתחול וקישור רכיבי אזור היצירה (Create Section) ===
             etListName = view.FindViewById<EditText>(Resource.Id.etListName);
-            spinnerType = view.FindViewById<Spinner>(Resource.Id.spinnerType);
+            
             btnCreate = view.FindViewById<Button>(Resource.Id.btnCreate);
 
-            // === 3. הגדרה ואתחול של רכיב ה-Spinner (תיבת הבחירה) ===
+            
             // יצירת מערך מחרוזות שמכיל את סוגי הרשימות האפשריים באפליקציה שלך
             var types = new string[] { "Standard", "Shopping", "Work", "Home" };
 
@@ -44,8 +44,8 @@ namespace Big17DataFirebase2
             var adapter = new ArrayAdapter<string>(Context, Android.Resource.Layout.SimpleSpinnerItem, types);
             // הגדרת העיצוב הויזואלי של הרשימה כשהיא נפתחת כלפי מטה
             adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
-            // הצבת האדפטר המעודכן בתוך ה-Spinner
-            spinnerType.Adapter = adapter;
+            
+            
 
             // === 4. טיפול באירוע לחיצה על כפתור הצטרפות (btnJoin) ===
             btnJoin.Click += async (s, e) =>
@@ -79,7 +79,7 @@ namespace Big17DataFirebase2
                 // שליפת השם שהוקלד לרשימה וניקוי רווחים בקצוות
                 string name = etListName.Text.Trim();
                 // שליפת הערך שנבחר כרגע מתוך תיבת ה-Spinner (סוג הרשימה)
-                string type = spinnerType.SelectedItem.ToString();
+               
 
                 // בדיקה שהמשתמש אכן הזין שם לרשימה החדשה
                 if (!string.IsNullOrEmpty(name))
@@ -88,7 +88,7 @@ namespace Big17DataFirebase2
                     string uid = FirebaseAuth.Instance.CurrentUser.Uid;
 
                     // קריאה לפונקציה אסינכרונית בתוך מחלקת העזר (FireBaseHelper) ליצירת הרשימה החדשה בשרת ה-Firestore
-                    bool success = await FireBaseHelper.CreateList(name, uid, type);
+                    bool success = await FireBaseHelper.CreateList(name, uid, "Standard");
 
                     // אם היצירה בשרת הצליחה בהצלחה
                     if (success)

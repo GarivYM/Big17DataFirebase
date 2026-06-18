@@ -98,18 +98,8 @@
             android:hint="List Name (e.g. Groceries)"
             android:layout_marginTop="10dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="List Type"
-            android:layout_marginTop="10dp"
-            android:textSize="12sp" />
+        
 
-        <Spinner
-            android:id="@+id/spinnerType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp" />
 
         <Button
             android:id="@+id/btnCreate"
